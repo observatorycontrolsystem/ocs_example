@@ -1,0 +1,98 @@
+version: "2.1"
+
+services:
+    db:
+        image: postgres:10.4-alpine
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_MULTIPLE_DATABASES=configdb,observationportal,downtime
+            - POSTGRES_PASSWORD=
+        volumes:
+            - ./data:/var/lib/postgresql/data
+            - ./docker-postgresql-multiple-databases:/docker-entrypoint-initdb.d
+        mem_limit: "2048m"
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        restart: always
+    configdb:
+        image: docker.lco.global/configdb:test_command
+        ports:
+            - "7000:7000"
+        environment:
+            - DB_HOST=db
+            - DB_NAME=configdb
+            - DB_USER=postgres
+            - DB_PASS=
+            - SECRET_KEY=ocs_example_configdb_secret_key
+            - DEBUG=true
+            - OAUTH_CLIENT_ID=configdb_application_client_id
+            - OAUTH_CLIENT_SECRET=configdb_application_client_secret
+            - OAUTH_TOKEN_URL=http://observation-portal:8000/o/token/
+        mem_limit: "512m"
+        restart: always
+        healthcheck:
+            test: ["CMD-SHELL", "wget localhost:7000/genericmodes/ -q -O - > /dev/null 2>&1"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        command: >
+            sh -c "python manage.py migrate 
+            && python manage.py init_e2e_data -s ogg --latitude 20.707 --longitude -156.258 --instrument-state=SCHEDULABLE
+            && python manage.py runserver 0.0.0.0:7000"
+        depends_on:
+            db:
+                condition: service_healthy
+    downtime:
+        image: docker.lco.global/downtime:test_command
+        ports:
+            - "7500:7500"
+        environment:
+            - DB_ENGINE=django.db.backends.postgresql
+            - DB_HOST=db
+            - DB_NAME=downtime
+            - DB_USER=postgres
+            - DB_PASS=
+            - SECRET_KEY=ocs_example_downtime_secret_key
+        mem_limit: "512m"
+        restart: always
+        command: >
+            sh -c "python manage.py migrate 
+            && python manage.py create_downtime -s ogg -e doma -t 1m0a -r Weather --offset-hours=24 --duration-hours=24
+            && python manage.py create_downtime -s ogg -e clma -t 2m0a -r Maintenance --offset-hours=-48 --duration-hours=24
+            && python manage.py runserver 0.0.0.0:7500"
+        depends_on:
+            db:
+                condition: service_healthy
+    observation-portal:
+        image: docker.lco.global/observation-portal:test_commands
+        ports:
+            - "8000:8000"
+        environment:
+            - DB_HOST=db
+            - DB_NAME=observationportal
+            - DB_USER=postgres
+            - DB_PASS=
+            - DEBUG=true
+            - SECRET_KEY=ocs_example_obs_portal_secret_key
+            - CONFIGDB_URL=http://configdb:7000
+            - DOWNTIMEDB_URL=http://downtime:7500
+            - ELASTICSEARCH_URL=
+        mem_limit: "512m"
+        restart: always
+        command: >
+            sh -c "python manage.py migrate 
+            && python manage.py create_user -u test_user -p test_pass
+            && python manage.py create_application -u test_user -n ConfigDB --client-id configdb_application_client_id --client-secret configdb_application_client_secret
+            && python manage.py create_semester --id TestSemester
+            && python manage.py create_proposal --id TestProposal --active --direct --pi test_user --time-allocation
+            && python manage.py example_requests -p TestProposal -s test_user
+            && python manage.py collectstatic --no-input
+            && python manage.py runserver 0.0.0.0:8000"
+        depends_on:
+            db:
+                condition: service_healthy
+            configdb:
+                condition: service_healthy
