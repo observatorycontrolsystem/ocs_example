@@ -6,7 +6,7 @@
 This example project provides a docker-compose file which launches an [Observation Portal](https://github.com/observatorycontrolsystem/observation-portal), a [Configuration Database](https://github.com/observatorycontrolsystem/configdb), and a [Downtime Database](https://github.com/observatorycontrolsystem/downtime) all connected together with pre-populated sample data.
 
 ## Credentials
-By default, the Observation Portal will have a single account created with the username `test_user` and the password `test_pass`. This can be used to login to the Observation Portal or the admin interface of the Configuration Database.
+By default, the Observation Portal will have a single account created with the username `test_user` and the password `test_pass`. This can be used to login to the Observation Portal or the admin interface of the Configuration or Downtime Databases.
 
 ## Example Data
 
