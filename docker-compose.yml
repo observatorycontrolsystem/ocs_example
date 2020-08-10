@@ -59,7 +59,8 @@ services:
         mem_limit: "512m"
         restart: always
         command: >
-            sh -c "python manage.py migrate 
+            sh -c "python manage.py migrate
+            && python manage.py shell -c \"from django.contrib.auth.models import User; User.objects.create_superuser('test_user', 'test_user@fake.com', 'test_pass')\"
             && python manage.py create_downtime -s ogg -e doma -t 1m0a -r Weather --offset-hours=24 --duration-hours=24
             && python manage.py create_downtime -s ogg -e clma -t 2m0a -r Maintenance --offset-hours=-48 --duration-hours=24
             && python manage.py runserver 0.0.0.0:7500"
