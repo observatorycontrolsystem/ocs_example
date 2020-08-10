@@ -29,6 +29,8 @@ A number of management scripts are run on container startup to pre-populate the 
 
 ## Running the example
 
+First, you must ensure that you pulled down the submodule `docker-postgresql-multiple-databases`. This can be done when cloning the repo by adding `--recursive-submodules --remote-submodules` to your `git clone` command. It could also be done after cloning the base repo by running `git submodule init` followed by `git submodule update` in the base repo directory. After doing either of these, your `docker-postgresql-multiple-databases` directory should contain a file named `create-multiple-postgresql-databases.sh`, which is used to create multiple databases in the same postgresql container. 
+
 This example requires access to the docker images of observatory control system components (all on dockerhub). It also requires your system to be running docker and have docker-compose installed. To run the example applications, run
 `docker-compose up -d` from within this directory. Once running, you should be able to use the credentials given above to access the admin interface of any of the applications, or to login and view/submit requests on the Observation Portal's web interface.
 
