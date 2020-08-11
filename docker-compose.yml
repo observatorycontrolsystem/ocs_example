@@ -86,7 +86,7 @@ services:
         command: >
             sh -c "python manage.py migrate 
             && python manage.py create_user -u test_user -p test_pass
-            && python manage.py create_application -u test_user -n ConfigDB --client-id configdb_application_client_id --client-secret configdb_application_client_secret
+            && python manage.py create_application -u test_user -n ConfigDB --client-id configdb_application_client_id --client-secret configdb_application_client_secret --redirect_uris http://127.0.0.1:7000
             && python manage.py create_semester --id TestSemester
             && python manage.py create_proposal --id TestProposal --active --direct --pi test_user --time-allocation
             && python manage.py example_requests -p TestProposal -s test_user
