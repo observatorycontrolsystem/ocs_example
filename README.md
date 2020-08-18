@@ -22,6 +22,7 @@ A number of management scripts are run on container startup to pre-populate the 
 
 ### Observation Portal
 
+* `create_application` - This command creates an oauth application link in the project which gives that application the ability to authenticate off of the oauth backend.
 * `create_user` - This command creates a superuser account and associated Profile, and creates an associated API Token.
 * `create_semester` - This command creates a Semester with the given id, start, and end times, which default around the present time.
 * `create_proposal` - This command creates a proposal with the specified properties, assigns the given user as the proposal PI, and optionally creates time allocations with 100 hours of all types of observing time on all schedulable instruments for the current Semester. There must be an existing, current semester defined to be able to create time allocations for the proposal.

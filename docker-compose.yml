@@ -18,7 +18,7 @@ services:
             retries: 5
         restart: always
     configdb:
-        image: docker.lco.global/configdb:test_command
+        image: observatorycontrolsystem/configdb:2.0.4
         ports:
             - "7000:7000"
         environment:
@@ -46,7 +46,7 @@ services:
             db:
                 condition: service_healthy
     downtime:
-        image: docker.lco.global/downtime:test_command
+        image: observatorycontrolsystem/downtime:2.2.2
         ports:
             - "7500:7500"
         environment:
@@ -68,7 +68,7 @@ services:
             db:
                 condition: service_healthy
     observation-portal:
-        image: docker.lco.global/observation-portal:test_commands
+        image: observatorycontrolsystem/observation-portal:2.0.7
         ports:
             - "8000:8000"
         environment:
@@ -86,10 +86,10 @@ services:
         command: >
             sh -c "python manage.py migrate 
             && python manage.py create_user -u test_user -p test_pass
-            && python manage.py create_application -u test_user -n ConfigDB --client-id configdb_application_client_id --client-secret configdb_application_client_secret --redirect_uris http://127.0.0.1:7000
+            && python manage.py create_application -u test_user -n ConfigDB --client-id configdb_application_client_id --client-secret configdb_application_client_secret --redirect-uris http://127.0.0.1:7000
             && python manage.py create_semester --id TestSemester
             && python manage.py create_proposal --id TestProposal --active --direct --pi test_user --time-allocation
-            && python manage.py example_requests -p TestProposal -s test_user
+            && python manage.py create_example_requests -p TestProposal -s test_user
             && python manage.py collectstatic --no-input
             && python manage.py runserver 0.0.0.0:8000"
         depends_on:
