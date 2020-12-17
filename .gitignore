@@ -127,3 +127,7 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw*
+
+# Output directories
+data/
+logs/

@@ -8,7 +8,6 @@ services:
             - POSTGRES_MULTIPLE_DATABASES=configdb,observationportal,downtime
             - POSTGRES_PASSWORD=
         volumes:
-            - ./data:/var/lib/postgresql/data
             - ./docker-postgresql-multiple-databases:/docker-entrypoint-initdb.d
         mem_limit: "2048m"
         healthcheck:
@@ -68,7 +67,7 @@ services:
             db:
                 condition: service_healthy
     observation-portal:
-        image: observatorycontrolsystem/observation-portal:2.0.7
+        image: observatorycontrolsystem/observation-portal:2.1.11
         ports:
             - "8000:8000"
         environment:
@@ -85,7 +84,7 @@ services:
         restart: always
         command: >
             sh -c "python manage.py migrate 
-            && python manage.py create_user -u test_user -p test_pass
+            && python manage.py create_user -u test_user -p test_pass --superuser --token=sutoken1234abcd
             && python manage.py create_application -u test_user -n ConfigDB --client-id configdb_application_client_id --client-secret configdb_application_client_secret --redirect-uris http://127.0.0.1:7000
             && python manage.py create_semester --id TestSemester
             && python manage.py create_proposal --id TestProposal --active --direct --pi test_user --time-allocation
@@ -97,3 +96,46 @@ services:
                 condition: service_healthy
             configdb:
                 condition: service_healthy
+
+    adaptive_scheduler:
+        image: observatorycontrolsystem/adaptive_scheduler:1.1.1
+        restart: always
+        links:
+            -  redis:redis
+        environment:
+            -  OPENTSDB_HOSTNAME=opentsdb-path
+            -  OPENTSDB_PYTHON_METRICS_TEST_MODE=True
+            -  OBSERVATION_PORTAL_URL=http://observation-portal:8000
+            -  CONFIGDB_URL=http://configdb:7000
+            -  DOWNTIMEDB_URL=http://downtime:7500
+            -  ELASTICSEARCH_URL=http://elasticsearch-path:9200
+            -  REDIS_URL=redis
+            -  SCHEDULER_SLEEP=30
+            -  SCHEDULER_TIMELIMIT=1200
+            -  SCHEDULER_HORIZON=2
+            -  SCHEDULER_SLICESIZE=300
+            -  "SCHEDULER_NOW="
+            -  "SCHEDULER_EXTRA_VARS= -o -w --normal_runtime_seconds 500 --rr_runtime_seconds 30 --save_output -k SCIP"
+            -  OBSERVATION_PORTAL_API_TOKEN=sutoken1234abcd
+        volumes:
+            # Edit these volume maps to wherever you want to store the log files and input/output data sets
+            -  ./data/input:/data/adaptive_scheduler/input_states/
+            -  ./data/output:/data/adaptive_scheduler/output_schedule/
+            -  ./data/:/data/adaptive_scheduler/
+            -  ./logs/:/ocs/adaptive_scheduler/logs/
+        working_dir: /ocs/adaptive_scheduler/
+        entrypoint: /ocs/adaptive_scheduler/docker-entrypoint.sh
+        depends_on:
+            db:
+                condition: service_healthy
+            configdb:
+                condition: service_healthy
+
+    redis:
+        image: redis:3.2
+        command: ["redis-server", "--appendonly", "yes"]
+        restart: always
+        ports:
+            -  6373:6379
+        volumes:
+            -  ./data/redis:/data
