@@ -8,7 +8,6 @@ services:
             - POSTGRES_MULTIPLE_DATABASES=configdb,observationportal,downtime
             - POSTGRES_PASSWORD=
         volumes:
-            #- ./data:/var/lib/postgresql/data
             - ./docker-postgresql-multiple-databases:/docker-entrypoint-initdb.d
         mem_limit: "2048m"
         healthcheck:
