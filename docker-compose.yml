@@ -102,7 +102,6 @@ services:
         restart: always
         links:
             -  redis:redis
-        
         environment:
             -  OPENTSDB_HOSTNAME=opentsdb-path
             -  OPENTSDB_PYTHON_METRICS_TEST_MODE=True
