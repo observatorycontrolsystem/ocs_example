@@ -45,7 +45,7 @@ services:
             db:
                 condition: service_healthy
     downtime:
-        image: observatorycontrolsystem/downtime:2.2.2
+        image: observatorycontrolsystem/downtime:2.3.0
         ports:
             - "7500:7500"
         environment:
@@ -55,6 +55,11 @@ services:
             - DB_USER=postgres
             - DB_PASS=
             - SECRET_KEY=ocs_example_downtime_secret_key
+            - CONFIGDB_URL=http://configdb:7000
+            - OAUTH_CLIENT_ID=downtime_application_client_id
+            - OAUTH_CLIENT_SECRET=downtime_application_client_secret
+            - OAUTH_TOKEN_URL=http://observation-portal:8000/o/token/
+            - OAUTH_PROFILE_URL=http://observation-portal:8000/api/profile/
         mem_limit: "512m"
         restart: always
         command: >
@@ -66,8 +71,11 @@ services:
         depends_on:
             db:
                 condition: service_healthy
+            configdb:
+                condition: service_healthy
+
     observation-portal:
-        image: observatorycontrolsystem/observation-portal:2.1.11
+        image: observatorycontrolsystem/observation-portal:3.0.6
         ports:
             - "8000:8000"
         environment:
@@ -86,6 +94,7 @@ services:
             sh -c "python manage.py migrate 
             && python manage.py create_user -u test_user -p test_pass --superuser --token=sutoken1234abcd
             && python manage.py create_application -u test_user -n ConfigDB --client-id configdb_application_client_id --client-secret configdb_application_client_secret --redirect-uris http://127.0.0.1:7000
+            && python manage.py create_application -u test_user -n Downtime --client-id downtime_application_client_id --client-secret downtime_application_client_secret --redirect-uris http://127.0.0.1:7500/
             && python manage.py create_semester --id TestSemester
             && python manage.py create_proposal --id TestProposal --active --direct --pi test_user --time-allocation
             && python manage.py create_example_requests -p TestProposal -s test_user
@@ -98,7 +107,7 @@ services:
                 condition: service_healthy
 
     adaptive_scheduler:
-        image: observatorycontrolsystem/adaptive_scheduler:1.1.1
+        image: observatorycontrolsystem/adaptive_scheduler:1.1.2
         restart: always
         links:
             -  redis:redis
@@ -107,7 +116,7 @@ services:
             -  OPENTSDB_PYTHON_METRICS_TEST_MODE=True
             -  OBSERVATION_PORTAL_URL=http://observation-portal:8000
             -  CONFIGDB_URL=http://configdb:7000
-            -  DOWNTIMEDB_URL=http://downtime:7500
+            -  DOWNTIMEDB_URL=http://downtime:7500/
             -  ELASTICSEARCH_URL=http://elasticsearch-path:9200
             -  REDIS_URL=redis
             -  SCHEDULER_SLEEP=30
