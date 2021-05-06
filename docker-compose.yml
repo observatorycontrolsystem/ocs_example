@@ -17,7 +17,7 @@ services:
             retries: 5
         restart: always
     configdb:
-        image: observatorycontrolsystem/configdb:2.0.4
+        image: observatorycontrolsystem/configdb:2.1.1
         ports:
             - "7000:7000"
         environment:
@@ -75,7 +75,7 @@ services:
                 condition: service_healthy
 
     observation-portal:
-        image: observatorycontrolsystem/observation-portal:3.0.6
+        image: observatorycontrolsystem/observation-portal:3.1.11
         ports:
             - "8000:8000"
         environment:
@@ -88,6 +88,9 @@ services:
             - CONFIGDB_URL=http://configdb:7000
             - DOWNTIMEDB_URL=http://downtime:7500
             - ELASTICSEARCH_URL=
+            - CORS_ALLOW_CREDENTIALS=true
+            - CORS_ORIGIN_WHITELIST=http://127.0.0.1:8080,http://localhost:8080
+            - CSRF_TRUSTED_ORIGINS=127.0.0.1:8080,localhost:8080
         mem_limit: "512m"
         restart: always
         command: >
@@ -139,6 +142,16 @@ services:
                 condition: service_healthy
             configdb:
                 condition: service_healthy
+
+    ocs_frontend:
+        image: observatorycontrolsystem/ocs-example-frontend:v0.0.1
+        ports:
+            - "8080:8080"
+        restart: always
+        environment:
+            -  VUE_APP_OBSERVATION_PORTAL_API_URL=http://127.0.0.1:8000
+            -  INTERNAL_OBSERVATION_PORTAL_API_URL=http://127.0.0.1:8000
+        entrypoint: /entrypoint.sh
 
     redis:
         image: redis:3.2
