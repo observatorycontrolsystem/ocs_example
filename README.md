@@ -2,7 +2,7 @@
 
 ## A pre-populated demo of the OCS services
 
-This example project provides a docker-compose file which launches an [Observation Portal](https://github.com/observatorycontrolsystem/observation-portal), a [Configuration Database](https://github.com/observatorycontrolsystem/configdb), a [Downtime Database](https://github.com/observatorycontrolsystem/downtime), an [Adaptive Scheduler](https://github.com/observatorycontrolsystem/adaptive_scheduler), and a [web interface](https://github.com/observatorycontrolsystem/ocs-example-frontend) all connected together with pre-populated sample data.
+This example project provides a docker-compose file which launches an [Observation Portal](https://github.com/observatorycontrolsystem/observation-portal), a [web interface](https://github.com/observatorycontrolsystem/ocs-example-frontend) for the observation portal, a [Configuration Database](https://github.com/observatorycontrolsystem/configdb), a [Downtime Database](https://github.com/observatorycontrolsystem/downtime), and an [Adaptive Scheduler](https://github.com/observatorycontrolsystem/adaptive_scheduler), all connected together with pre-populated sample data.
 
 ## Credentials
 
@@ -37,9 +37,9 @@ This example requires access to the docker images of observatory control system 
 
 By default, the docker-compose file has ports set up such that:
 
-* The **Web Interface** should be accessible from <http://127.0.0.1:8080>
+* The **Observation Portal** should be accessible from <http://127.0.0.1:8000/api>
 
-* The **Observation Portal** should be accessible from <http://127.0.0.1:8000>
+* The observation portal's **Web Interface** should be accessible from <http://127.0.0.1:8080>
 
 * The **Configuration Database** should be accessible from <http://127.0.0.1:7000>
 
