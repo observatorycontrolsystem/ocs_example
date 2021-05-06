@@ -1,11 +1,11 @@
 # OCS Example Project
 
-
 ## A pre-populated demo of the OCS services
 
-This example project provides a docker-compose file which launches an [Observation Portal](https://github.com/observatorycontrolsystem/observation-portal), a [Configuration Database](https://github.com/observatorycontrolsystem/configdb), a [Downtime Database](https://github.com/observatorycontrolsystem/downtime), and an [Adaptive Scheduler](https://github.com/observatorycontrolsystem/adaptive_scheduler) all connected together with pre-populated sample data.
+This example project provides a docker-compose file which launches an [Observation Portal](https://github.com/observatorycontrolsystem/observation-portal), a [web interface](https://github.com/observatorycontrolsystem/ocs-example-frontend) for the observation portal, a [Configuration Database](https://github.com/observatorycontrolsystem/configdb), a [Downtime Database](https://github.com/observatorycontrolsystem/downtime), and an [Adaptive Scheduler](https://github.com/observatorycontrolsystem/adaptive_scheduler), all connected together with pre-populated sample data.
 
 ## Credentials
+
 By default, the Observation Portal will have a single account created with the username `test_user` and the password `test_pass`. This can be used to login to the Observation Portal or the admin interface of the Configuration or Downtime Databases.
 
 ## Example Data
@@ -36,6 +36,11 @@ This example requires access to the docker images of observatory control system 
 `docker-compose up -d` from within this directory. Once running, you should be able to use the credentials given above to access the admin interface of any of the applications, or to login and view/submit requests on the Observation Portal's web interface.
 
 By default, the docker-compose file has ports set up such that:
-The Observation Portal should be accessible from <http://127.0.0.1:8000>
-The Configuration Database should be accessible from <http://127.0.0.1:7000>
-The Downtime Database should be accessible from <http://127.0.0.1:7500>
+
+* The **Observation Portal** should be accessible from <http://127.0.0.1:8000/api>
+
+* The observation portal's **Web Interface** should be accessible from <http://127.0.0.1:8080>
+
+* The **Configuration Database** should be accessible from <http://127.0.0.1:7000>
+
+* The **Downtime Database** should be accessible from <http://127.0.0.1:7500>
