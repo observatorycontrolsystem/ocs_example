@@ -45,7 +45,7 @@ services:
             db:
                 condition: service_healthy
     downtime:
-        image: observatorycontrolsystem/downtime:2.3.0
+        image: observatorycontrolsystem/downtime:2.3.2
         ports:
             - "7500:7500"
         environment:
