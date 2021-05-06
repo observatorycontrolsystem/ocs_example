@@ -144,7 +144,7 @@ services:
                 condition: service_healthy
 
     ocs_frontend:
-        image: observatorycontrolsystem/ocs-example-frontend:v0.0.1
+        image: observatorycontrolsystem/ocs-example-frontend:0.0.1
         ports:
             - "8080:8080"
         restart: always
