@@ -10,7 +10,7 @@ By default, the Observation Portal will have a single account created with the u
 
 ## Example Data
 
-A number of management scripts are run on container startup to pre-populate the database with some example data
+A number of management scripts are run on container startup to pre-populate the database with some example data. Note that these scripts run on startup to provide an initial set of test data to allow you start playing around with the OCS projects, however generally the API endpoints or the admin site of each project should be used to update/ add data in a running project.
 
 ### Configuration Database
 
@@ -22,7 +22,7 @@ A number of management scripts are run on container startup to pre-populate the 
 
 ### Observation Portal
 
-* `create_application` - This command creates an oauth application link in the project which gives that application the ability to authenticate off of the oauth backend.
+* `create_application` - This command creates an OAauth application link in the project which gives that application the ability to authenticate off of the oauth backend.
 * `create_user` - This command creates a superuser account and associated Profile, and creates an associated API Token.
 * `create_semester` - This command creates a Semester with the given id, start, and end times, which default around the present time.
 * `create_proposal` - This command creates a proposal with the specified properties, assigns the given user as the proposal PI, and optionally creates time allocations with 100 hours of all types of observing time on all schedulable instruments for the current Semester. There must be an existing, current semester defined to be able to create time allocations for the proposal.
@@ -30,17 +30,36 @@ A number of management scripts are run on container startup to pre-populate the 
 
 ## Running the example
 
-First, you must ensure that you pulled down the submodule `docker-postgresql-multiple-databases`. This can be done when cloning the repo by adding `--recurse-submodules --remote-submodules` to your `git clone` command. It could also be done after cloning the base repo by running `git submodule init` followed by `git submodule update` in the base repo directory. After doing either of these, your `docker-postgresql-multiple-databases` directory should contain a file named `create-multiple-postgresql-databases.sh`, which is used to create multiple databases in the same postgresql container.
+First, you must ensure that you pulled down the submodule `docker-postgresql-multiple-databases`. This can be done when cloning the repo by adding `--recurse-submodules --remote-submodules` to your `git clone` command:
 
-This example requires access to the docker images of observatory control system components (all on dockerhub). It also requires your system to be running docker and have docker-compose installed. To run the example applications, run
-`docker-compose up -d` from within this directory. Once running, you should be able to use the credentials given above to access the admin interface of any of the applications, or to login and view/submit requests on the Observation Portal's web interface.
+```
+git clone git@github.com:observatorycontrolsystem/ocs_example.git --recurse-submodules --remote-submodules
+```
+
+It could also be done after cloning the base repo by running `git submodule init` followed by `git submodule update` in the base repo directory:
+
+```
+git clone git@github.com:observatorycontrolsystem/ocs_example.git
+cd ocs_example
+git submodule init
+git submodule update
+```
+
+After doing either of these, your `docker-postgresql-multiple-databases` directory should contain a file named `create-multiple-postgresql-databases.sh`, which is used to create multiple databases in the same postgresql container. 
+
+This example requires access to the observatory control system docker images, which are all on [Docker Hub](https://hub.docker.com/u/observatorycontrolsystem). It also requires your system to be running docker and have docker-compose installed. To run the example applications, run:
+
+
+```docker-compose up -d```
+
+from within this directory. Once running, you can use the [credentials given above](https://github.com/observatorycontrolsystem/ocs_example#credentials) to access the admin interface of any of the applications, or to login and view/submit requests on the Observation Portal's web interface.
 
 By default, the docker-compose file has ports set up such that:
 
-* The **Observation Portal** should be accessible from <http://127.0.0.1:8000/api>
+* The **Observation Portal** API is accessible from <http://127.0.0.1:8000/api/>, and its admin interface is accessible from <http://127.0.0.1:8000/admin/>.
 
-* The observation portal's **Web Interface** should be accessible from <http://127.0.0.1:8080>
+* The observation portal's **Web Interface** is accessible from <http://127.0.0.1:8080/>
 
-* The **Configuration Database** should be accessible from <http://127.0.0.1:7000>
+* The **Configuration Database** is accessible from <http://127.0.0.1:7000/> and its admin interface is accessible from <http://127.0.0.1:7000/admin/>.
 
-* The **Downtime Database** should be accessible from <http://127.0.0.1:7500>
+* The **Downtime Database** is accessible from <http://127.0.0.1:7500/> and its admin interface is accessible from <http://127.0.0.1:7500/admin/>.
