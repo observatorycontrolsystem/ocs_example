@@ -130,4 +130,5 @@ yarn-error.log*
 
 # Output directories
 data/
+!data/fits/*
 logs/
