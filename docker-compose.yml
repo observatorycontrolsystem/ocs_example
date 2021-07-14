@@ -278,7 +278,7 @@ services:
         mem_limit: "512m"
         restart: always
         volumes: 
-            - ./data/fits:/data/fits
+            - ./fits:/fits
             - ./localingester:/localingester
         healthcheck:
             test: ["CMD-SHELL", "wget localhost:9500/ -q -O - > /dev/null 2>&1"]
@@ -292,7 +292,7 @@ services:
             pip install -e /localingester/ingester ;
             export AUTH_TOKEN=$$(echo 'from django.contrib.auth.models import User; User.objects.create_superuser(\"test_archive_user\", \"archiveadmin@example.com\", \"test_archive_pass\"); print(User.objects.first().auth_token)' | python manage.py shell) ;
             echo $$AUTH_TOKEN;
-            python /data/fits/init_ingester_routine.py ;
+            python /fits/init_ingester_routine.py ;
             wait %1
             "
         depends_on:
