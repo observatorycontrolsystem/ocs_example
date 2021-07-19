@@ -44,3 +44,5 @@ By default, the docker-compose file has ports set up such that:
 * The **Configuration Database** should be accessible from <http://127.0.0.1:7000>
 
 * The **Downtime Database** should be accessible from <http://127.0.0.1:7500>
+
+* The **Science Archive** should be accessible from <http://127.0.0.1:9500>

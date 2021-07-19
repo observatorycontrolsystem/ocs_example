@@ -130,6 +130,4 @@ yarn-error.log*
 
 # Output directories
 data/
-!data/fits/init_ingester_routine.py
-!data/fits/cpt1m012-fa06-20210705-0237-e91.fits.fz
 logs/
