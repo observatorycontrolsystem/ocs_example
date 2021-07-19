@@ -27,7 +27,10 @@ except:
     print("Couldn't enable versioning on bucket %s.", bucket.name)
 
 # ingest a frame
-with open('/fits/cpt1m012-fa06-20210705-0237-e91.fits.fz', 'rb') as fileobj:
-    ingested_record = ingester.upload_file_and_ingest_to_archive(fileobj)
-    print('ingested record: ')
-    print(ingested_record)
+with open('/example_data/cpt1m012-fa06-20210705-0237-e91.fits.fz', 'rb') as fileobj:
+    if not ingester.frame_exists(fileobj):
+        record = ingester.validate_fits_and_create_archive_record(fileobj)
+        s3_version = ingester.upload_file_to_s3(fileobj)
+        # Change the version key to be compatible with the ingester (32 char max)
+        s3_version['key'] = s3_version['key'].replace('-', '')
+        ingested_record = ingester.ingest_archive_record(s3_version, record)
