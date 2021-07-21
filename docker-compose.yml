@@ -2,8 +2,6 @@ version: "3.7"
 
 services:
     db:
-        #image: postgres:10.4-alpine
-        #image: postgres:13.3-alpine
         image: postgis/postgis:13-master
         environment:
             - POSTGRES_USER=postgres
@@ -57,7 +55,7 @@ services:
             - DB_HOST=db
             - DB_NAME=downtime
             - DB_USER=postgres
-            - DB_PASS=
+            - DB_PASS=postgrespass
             - SECRET_KEY=ocs_example_downtime_secret_key
             - CONFIGDB_URL=http://configdb:7000
             - OAUTH_CLIENT_ID=downtime_application_client_id
@@ -162,7 +160,6 @@ services:
             -  INTERNAL_OBSERVATION_PORTAL_API_URL=http://127.0.0.1:8000
         entrypoint: /entrypoint.sh
 
-
     minio1:
         image: minio/minio:RELEASE.2021-06-17T00-10-46Z
         volumes:
@@ -261,7 +258,7 @@ services:
             - AWS_SECRET_ACCESS_KEY=minio123
             - AWS_DEFAULT_REGION=minioregion
             - AWS_BUCKET=ocs-example-bucket
-            - S3_ENDPOINT_URL=http://localhost:9000
+            - S3_ENDPOINT_URL=http://localhost:9000/
             - OAUTH_CLIENT_ID=science_archive_application_client_id
             - OAUTH_CLIENT_SECRET=science_archive_application_client_secret
             - OAUTH_TOKEN_URL=http://observation-portal:8000/o/token/
@@ -276,7 +273,6 @@ services:
         volumes: 
             - ./example_data:/example_data
             - ./scripts/science_archive:/scripts
-            - ./localingester:/localingester
         healthcheck:
             test: ["CMD-SHELL", "wget localhost:9500/ -q -O - > /dev/null 2>&1"]
             interval: 10s
@@ -288,9 +284,11 @@ services:
             python manage.py runserver 0.0.0.0:9500 &
             pip install ocs_ingester
 
-            export AUTH_TOKEN=$$(echo 'from django.contrib.auth.models import User; 
+            export AUTH_TOKEN=$$(\
+            echo 'from django.contrib.auth.models import User; 
             User.objects.create_superuser(\"test_user\", \"admin@example.com\", \"test_pass\"); 
-            print(User.objects.first().auth_token)' | python manage.py shell) ;
+            print(User.objects.first().auth_token)' | python manage.py shell
+            );
 
             python /scripts/init_ingester_routine.py ;
             wait %1"
@@ -298,30 +296,36 @@ services:
             minio1:
                 condition: service_healthy
 
-            #User.objects.create_superuser(\"test_archive_user\", \"archiveadmin@example.com\", \"test_archive_pass\"); 
-            #sh -c "python manage.py migrate 
-            #&& python manage.py collectstatic --no-input 
-            #&& python manage.py runserver 0.0.0.0:9500"
-            #pip install -e /localingester/ingester ;
-
     #ingester:
         #image: python:3.9
         #network_mode: "service:science_archive"
         #mem_limit: "512m"
         #volumes:
+            #- ./example_data:/example_data
             #- ./scripts/science_archive:/scripts
-            #- ./localingester:/localingester
+        #environment:
+            #- API_ROOT=http://localhost:9500/
+            #- BUCKET=ocs-example-bucket
+            #- OPENTSDB_PYTHON_METRICS_TEST_MODE=True
+            #- AWS_ACCESS_KEY_ID=minio
+            #- AWS_SECRET_ACCESS_KEY=minio123
+            #- AWS_DEFAULT_REGION=minioregion
+            #- S3_ENDPOINT_URL=http://localhost:9000/
         #command: >
             #sh -c "
             #until $$(curl --output /dev/null --silent --head --fail http://localhost:9500); do sleep 1; done;
-            #pip install -e /localingester/ingester ;
-            #export AUTH_TOKEN=$$(echo 'from django.contrib.auth.models import User; User.objects.create_superuser(\"test_archive_user\", \"archiveadmin@example.com\", \"test_archive_pass\"); print(User.objects.first().auth_token)' | python manage.py shell) ;
-            #echo $$AUTH_TOKEN;
+            #pip install ocs_ingester boto3;
+
+            #export AUTH_TOKEN=$$(\
+            #curl --data \"username=test_user&password=test_pass\" http://localhost:9500/api-token-auth/ | \
+            #python3 -c \"import sys, json; print(json.load(sys.stdin)['token'])\"
+            #);
+            #echo $AUTH_TOKEN
+
             #python /scripts/init_ingester_routine.py ;
             #"
         #depends_on:
             #- science_archive
-
 
     redis:
         image: redis:3.2

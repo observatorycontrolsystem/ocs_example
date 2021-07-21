@@ -2,9 +2,6 @@ import os
 from ocs_ingester import ingester
 import boto3
 
-print('running in the init_ingester_routine')
-print('archive access token: ', os.getenv('AUTH_TOKEN'))
-
 session = boto3.Session()
 
 # create a bucket
@@ -24,10 +21,10 @@ try:
     bucket.Versioning().enable()
     print("Enabled versioning on bucket %s.", bucket.name)
 except:
-    print("Couldn't enable versioning on bucket %s.", bucket.name)
+    print("Couldn't enable versioning on bucket")
 
-# ingest a frame
-with open('/example_data/cpt1m012-fa06-20210705-0237-e91.fits.fz', 'rb') as fileobj:
+# ingest an example frame
+with open('/example_data/ogg0m406-kb27-20210720-0307-s91.fits.fz', 'rb') as fileobj:
     if not ingester.frame_exists(fileobj):
         record = ingester.validate_fits_and_create_archive_record(fileobj)
         s3_version = ingester.upload_file_to_s3(fileobj)
