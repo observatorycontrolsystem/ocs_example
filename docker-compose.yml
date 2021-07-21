@@ -48,6 +48,8 @@ services:
 
     downtime:
         image: observatorycontrolsystem/downtime:2.3.2
+        logging: 
+            driver: none
         ports:
             - "7500:7500"
         environment:
