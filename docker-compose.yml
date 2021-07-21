@@ -2,8 +2,6 @@ version: "3.7"
 
 services:
     db:
-        #image: postgres:10.4-alpine
-        #image: postgres:13.3-alpine
         image: postgis/postgis:13-master
         environment:
             - POSTGRES_USER=postgres
@@ -47,37 +45,38 @@ services:
         depends_on:
             db:
                 condition: service_healthy
-    #downtime:
-        #image: observatorycontrolsystem/downtime:2.3.2
-        #logging: 
-            #driver: none
-        #ports:
-            #- "7500:7500"
-        #environment:
-            #- DB_ENGINE=django.db.backends.postgresql
-            #- DB_HOST=db
-            #- DB_NAME=downtime
-            #- DB_USER=postgres
-            #- DB_PASS=postgrespass
-            #- SECRET_KEY=ocs_example_downtime_secret_key
-            #- CONFIGDB_URL=http://configdb:7000
-            #- OAUTH_CLIENT_ID=downtime_application_client_id
-            #- OAUTH_CLIENT_SECRET=downtime_application_client_secret
-            #- OAUTH_TOKEN_URL=http://observation-portal:8000/o/token/
-            #- OAUTH_PROFILE_URL=http://observation-portal:8000/api/profile/
-        #mem_limit: "512m"
-        #restart: always
-        #command: >
-            #sh -c "python manage.py migrate
-            #&& python manage.py shell -c \"from django.contrib.auth.models import User; User.objects.create_superuser('test_user', 'test_user@fake.com', 'test_pass')\"
-            #&& python manage.py create_downtime -s ogg -e doma -t 1m0a -r Weather --offset-hours=24 --duration-hours=24
-            #&& python manage.py create_downtime -s ogg -e clma -t 2m0a -r Maintenance --offset-hours=-48 --duration-hours=24
-            #&& python manage.py runserver 0.0.0.0:7500"
-        #depends_on:
-            #db:
-                #condition: service_healthy
-            #configdb:
-                #condition: service_healthy
+
+    downtime:
+        image: observatorycontrolsystem/downtime:2.3.2
+        logging: 
+            driver: none
+        ports:
+            - "7500:7500"
+        environment:
+            - DB_ENGINE=django.db.backends.postgresql
+            - DB_HOST=db
+            - DB_NAME=downtime
+            - DB_USER=postgres
+            - DB_PASS=postgrespass
+            - SECRET_KEY=ocs_example_downtime_secret_key
+            - CONFIGDB_URL=http://configdb:7000
+            - OAUTH_CLIENT_ID=downtime_application_client_id
+            - OAUTH_CLIENT_SECRET=downtime_application_client_secret
+            - OAUTH_TOKEN_URL=http://observation-portal:8000/o/token/
+            - OAUTH_PROFILE_URL=http://observation-portal:8000/api/profile/
+        mem_limit: "512m"
+        restart: always
+        command: >
+            sh -c "python manage.py migrate
+            && python manage.py shell -c \"from django.contrib.auth.models import User; User.objects.create_superuser('test_user', 'test_user@fake.com', 'test_pass')\"
+            && python manage.py create_downtime -s ogg -e doma -t 1m0a -r Weather --offset-hours=24 --duration-hours=24
+            && python manage.py create_downtime -s ogg -e clma -t 2m0a -r Maintenance --offset-hours=-48 --duration-hours=24
+            && python manage.py runserver 0.0.0.0:7500"
+        depends_on:
+            db:
+                condition: service_healthy
+            configdb:
+                condition: service_healthy
 
     observation-portal:
         image: observatorycontrolsystem/observation-portal:3.1.11
@@ -115,41 +114,41 @@ services:
             configdb:
                 condition: service_healthy
 
-    #adaptive_scheduler:
-        #image: observatorycontrolsystem/adaptive_scheduler:1.1.2
-        #logging: 
-            #driver: none
-        #restart: always
-        #links:
-            #-  redis:redis
-        #environment:
-            #-  OPENTSDB_HOSTNAME=opentsdb-path
-            #-  OPENTSDB_PYTHON_METRICS_TEST_MODE=True
-            #-  OBSERVATION_PORTAL_URL=http://observation-portal:8000
-            #-  CONFIGDB_URL=http://configdb:7000
-            #-  DOWNTIMEDB_URL=http://downtime:7500/
-            #-  ELASTICSEARCH_URL=http://elasticsearch-path:9200
-            #-  REDIS_URL=redis
-            #-  SCHEDULER_SLEEP=30
-            #-  SCHEDULER_TIMELIMIT=1200
-            #-  SCHEDULER_HORIZON=2
-            #-  SCHEDULER_SLICESIZE=300
-            #-  "SCHEDULER_NOW="
-            #-  "SCHEDULER_EXTRA_VARS= -o -w --normal_runtime_seconds 500 --rr_runtime_seconds 30 --save_output -k SCIP"
-            #-  OBSERVATION_PORTAL_API_TOKEN=sutoken1234abcd
-        #volumes:
-            ## Edit these volume maps to wherever you want to store the log files and input/output data sets
-            #-  ./data/input:/data/adaptive_scheduler/input_states/
-            #-  ./data/output:/data/adaptive_scheduler/output_schedule/
-            #-  ./data/:/data/adaptive_scheduler/
-            #-  ./logs/:/ocs/adaptive_scheduler/logs/
-        #working_dir: /ocs/adaptive_scheduler/
-        #entrypoint: /ocs/adaptive_scheduler/docker-entrypoint.sh
-        #depends_on:
-            #db:
-                #condition: service_healthy
-            #configdb:
-                #condition: service_healthy
+    adaptive_scheduler:
+        image: observatorycontrolsystem/adaptive_scheduler:1.1.2
+        logging: 
+            driver: none
+        restart: always
+        links:
+            -  redis:redis
+        environment:
+            -  OPENTSDB_HOSTNAME=opentsdb-path
+            -  OPENTSDB_PYTHON_METRICS_TEST_MODE=True
+            -  OBSERVATION_PORTAL_URL=http://observation-portal:8000
+            -  CONFIGDB_URL=http://configdb:7000
+            -  DOWNTIMEDB_URL=http://downtime:7500/
+            -  ELASTICSEARCH_URL=http://elasticsearch-path:9200
+            -  REDIS_URL=redis
+            -  SCHEDULER_SLEEP=30
+            -  SCHEDULER_TIMELIMIT=1200
+            -  SCHEDULER_HORIZON=2
+            -  SCHEDULER_SLICESIZE=300
+            -  "SCHEDULER_NOW="
+            -  "SCHEDULER_EXTRA_VARS= -o -w --normal_runtime_seconds 500 --rr_runtime_seconds 30 --save_output -k SCIP"
+            -  OBSERVATION_PORTAL_API_TOKEN=sutoken1234abcd
+        volumes:
+            # Edit these volume maps to wherever you want to store the log files and input/output data sets
+            -  ./data/input:/data/adaptive_scheduler/input_states/
+            -  ./data/output:/data/adaptive_scheduler/output_schedule/
+            -  ./data/:/data/adaptive_scheduler/
+            -  ./logs/:/ocs/adaptive_scheduler/logs/
+        working_dir: /ocs/adaptive_scheduler/
+        entrypoint: /ocs/adaptive_scheduler/docker-entrypoint.sh
+        depends_on:
+            db:
+                condition: service_healthy
+            configdb:
+                condition: service_healthy
 
     ocs_frontend:
         image: observatorycontrolsystem/ocs-example-frontend:0.0.1
@@ -160,7 +159,6 @@ services:
             -  VUE_APP_OBSERVATION_PORTAL_API_URL=http://127.0.0.1:8000
             -  INTERNAL_OBSERVATION_PORTAL_API_URL=http://127.0.0.1:8000
         entrypoint: /entrypoint.sh
-
 
     minio1:
         image: minio/minio:RELEASE.2021-06-17T00-10-46Z
@@ -260,7 +258,7 @@ services:
             - AWS_SECRET_ACCESS_KEY=minio123
             - AWS_DEFAULT_REGION=minioregion
             - AWS_BUCKET=ocs-example-bucket
-            - S3_ENDPOINT_URL=http://localhost:9000
+            - S3_ENDPOINT_URL=http://localhost:9000/
             - OAUTH_CLIENT_ID=science_archive_application_client_id
             - OAUTH_CLIENT_SECRET=science_archive_application_client_secret
             - OAUTH_TOKEN_URL=http://observation-portal:8000/o/token/
@@ -275,7 +273,6 @@ services:
         volumes: 
             - ./example_data:/example_data
             - ./scripts/science_archive:/scripts
-            - ./localingester:/localingester
         healthcheck:
             test: ["CMD-SHELL", "wget localhost:9500/ -q -O - > /dev/null 2>&1"]
             interval: 10s
@@ -287,9 +284,11 @@ services:
             python manage.py runserver 0.0.0.0:9500 &
             pip install ocs_ingester
 
-            export AUTH_TOKEN=$$(echo 'from django.contrib.auth.models import User; 
+            export AUTH_TOKEN=$$(\
+            echo 'from django.contrib.auth.models import User; 
             User.objects.create_superuser(\"test_user\", \"admin@example.com\", \"test_pass\"); 
-            print(User.objects.first().auth_token)' | python manage.py shell) ;
+            print(User.objects.first().auth_token)' | python manage.py shell
+            );
 
             python /scripts/init_ingester_routine.py ;
             wait %1"
@@ -297,30 +296,36 @@ services:
             minio1:
                 condition: service_healthy
 
-            #User.objects.create_superuser(\"test_archive_user\", \"archiveadmin@example.com\", \"test_archive_pass\"); 
-            #sh -c "python manage.py migrate 
-            #&& python manage.py collectstatic --no-input 
-            #&& python manage.py runserver 0.0.0.0:9500"
-            #pip install -e /localingester/ingester ;
-
     #ingester:
         #image: python:3.9
         #network_mode: "service:science_archive"
         #mem_limit: "512m"
         #volumes:
+            #- ./example_data:/example_data
             #- ./scripts/science_archive:/scripts
-            #- ./localingester:/localingester
+        #environment:
+            #- API_ROOT=http://localhost:9500/
+            #- BUCKET=ocs-example-bucket
+            #- OPENTSDB_PYTHON_METRICS_TEST_MODE=True
+            #- AWS_ACCESS_KEY_ID=minio
+            #- AWS_SECRET_ACCESS_KEY=minio123
+            #- AWS_DEFAULT_REGION=minioregion
+            #- S3_ENDPOINT_URL=http://localhost:9000/
         #command: >
             #sh -c "
             #until $$(curl --output /dev/null --silent --head --fail http://localhost:9500); do sleep 1; done;
-            #pip install -e /localingester/ingester ;
-            #export AUTH_TOKEN=$$(echo 'from django.contrib.auth.models import User; User.objects.create_superuser(\"test_archive_user\", \"archiveadmin@example.com\", \"test_archive_pass\"); print(User.objects.first().auth_token)' | python manage.py shell) ;
-            #echo $$AUTH_TOKEN;
+            #pip install ocs_ingester boto3;
+
+            #export AUTH_TOKEN=$$(\
+            #curl --data \"username=test_user&password=test_pass\" http://localhost:9500/api-token-auth/ | \
+            #python3 -c \"import sys, json; print(json.load(sys.stdin)['token'])\"
+            #);
+            #echo $AUTH_TOKEN
+
             #python /scripts/init_ingester_routine.py ;
             #"
         #depends_on:
             #- science_archive
-
 
     redis:
         image: redis:3.2
