@@ -19,6 +19,6 @@ try:
     resource = session.resource('s3', endpoint_url=os.getenv('S3_ENDPOINT_URL'))
     bucket = resource.Bucket(os.getenv('AWS_BUCKET'))
     bucket.Versioning().enable()
-    print("Enabled versioning on bucket %s.", bucket.name)
+    print(f"Enabled versioning on bucket {bucket.name}")
 except:
     print("Couldn't enable versioning on bucket")
