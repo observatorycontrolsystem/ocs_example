@@ -160,6 +160,11 @@ services:
             -  INTERNAL_OBSERVATION_PORTAL_API_URL=http://127.0.0.1:8000
         entrypoint: /entrypoint.sh
 
+    # The reason for using four minio servers:
+    # The science archive requires an "s3" bucket with versioning enabled.
+    # In order to use versioning, minio requires a distributed erasure code setup.
+    # Distributed minio setups require at least four servers.
+    # For details, see: https://docs.min.io/docs/minio-erasure-code-quickstart-guide.html
     minio1:
         image: minio/minio:RELEASE.2021-06-17T00-10-46Z
         volumes:
@@ -168,9 +173,9 @@ services:
         expose:
             - "9000"
         environment:
-            MINIO_ROOT_USER: minio
-            MINIO_ROOT_PASSWORD: minio123
-            MINIO_REGION_NAME: minioregion
+            MINIO_ROOT_USER: minio_access_key
+            MINIO_ROOT_PASSWORD: minio_secret
+            MINIO_REGION_NAME: minio_region
         command: server http://minio{1...4}/data{1...2}
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -185,9 +190,9 @@ services:
         expose:
             - "9000"
         environment:
-            MINIO_ROOT_USER: minio
-            MINIO_ROOT_PASSWORD: minio123
-            MINIO_REGION_NAME: minioregion
+            MINIO_ROOT_USER: minio_access_key
+            MINIO_ROOT_PASSWORD: minio_secret
+            MINIO_REGION_NAME: minio_region
         command: server http://minio{1...4}/data{1...2}
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -202,9 +207,9 @@ services:
         expose:
             - "9000"
         environment:
-            MINIO_ROOT_USER: minio
-            MINIO_ROOT_PASSWORD: minio123
-            MINIO_REGION_NAME: minioregion
+            MINIO_ROOT_USER: minio_access_key
+            MINIO_ROOT_PASSWORD: minio_secret
+            MINIO_REGION_NAME: minio_region
         command: server http://minio{1...4}/data{1...2}
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -219,9 +224,9 @@ services:
         expose:
             - "9000"
         environment:
-            MINIO_ROOT_USER: minio
-            MINIO_ROOT_PASSWORD: minio123
-            MINIO_REGION_NAME: minioregion
+            MINIO_ROOT_USER: minio_access_key
+            MINIO_ROOT_PASSWORD: minio_secret
+            MINIO_REGION_NAME: minio_region
         command: server http://minio{1...4}/data{1...2}
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -254,9 +259,9 @@ services:
             - DB_USER=postgres
             - DB_PASS=postgrespass
             - SECRET_KEY=ocs_example_science_archive_secret_key
-            - AWS_ACCESS_KEY_ID=minio
-            - AWS_SECRET_ACCESS_KEY=minio123
-            - AWS_DEFAULT_REGION=minioregion
+            - AWS_ACCESS_KEY_ID=minio_access_key
+            - AWS_SECRET_ACCESS_KEY=minio_secret
+            - AWS_DEFAULT_REGION=minio_region
             - AWS_BUCKET=ocs-example-bucket
             - S3_ENDPOINT_URL=http://localhost:9000/
             - OAUTH_CLIENT_ID=science_archive_application_client_id

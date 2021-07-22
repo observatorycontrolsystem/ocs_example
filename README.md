@@ -15,6 +15,10 @@ all connected together with pre-populated sample data.
 
 By default, the Observation Portal will have a single account created with the username `test_user` and the password `test_pass`. This can be used to login to the Observation Portal, or the admin interface of the Science Archive, Configuration Database, or Downtime Database.
 
+Minio is setup with the access key `minio_access_key` and secret `minio_secret`. 
+
+These can be configured in the docker compose file.
+
 ## Example Data
 
 A number of management scripts are run on container startup to pre-populate the database with some example data. Note that these scripts run on startup to provide an initial set of test data to allow you start playing around with the OCS projects, however generally the API endpoints or the admin site of each project should be used to update/ add data in a running project.
@@ -73,7 +77,8 @@ By default, the docker-compose file has ports set up such that:
 
 * The **Science Archive** should be accessible from <http://127.0.0.1:9500/> and its admin interface is accessible from <http://127.0.0.1:9500/admin/>.
 
-* The **minio bucket** which emulates S3 should be accessible from <http://127.0.0.1:9000/>
+* The **minio server** which emulates S3 should be accessible from <http://127.0.0.1:9000/>. 
+
 
 ## Adding data to the Science Archive
 

@@ -11,9 +11,9 @@ import requests
 ################################################################################
 
 # AWS keys can be found in the docker compose file, defined in the minio instances.
-#os.environ['AWS_ACCESS_KEY_ID'] = 'minio'
-#os.environ['AWS_SECRET_ACCESS_KEY'] = 'minio123'
-#os.environ['AWS_DEFAULT_REGION'] = 'minioregion'
+#os.environ['AWS_ACCESS_KEY_ID'] = 'minio_access_key'
+#os.environ['AWS_SECRET_ACCESS_KEY'] = 'minio_secret'
+#os.environ['AWS_DEFAULT_REGION'] = 'minio_region'
 #os.environ['BUCKET'] = 'ocs-example-bucket'
 
 # This is the url pointing to the minio bucket. 
