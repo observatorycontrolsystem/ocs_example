@@ -48,8 +48,6 @@ services:
 
     downtime:
         image: observatorycontrolsystem/downtime:2.3.2
-        logging: 
-            driver: none
         ports:
             - "7500:7500"
         environment:
@@ -284,7 +282,7 @@ services:
             sh -c "python manage.py migrate ;
             python manage.py collectstatic --no-input ;
             python manage.py runserver 0.0.0.0:9500 &
-            pip install ocs_ingester
+            pip install ocs_ingester requests ;
 
             export AUTH_TOKEN=$$(\
             echo 'from django.contrib.auth.models import User; 
@@ -292,42 +290,15 @@ services:
             print(User.objects.first().auth_token)' | python manage.py shell
             );
 
-            python /scripts/init_ingester_routine.py ;
+            python /scripts/initialize_bucket.py ;
+            python /scripts/ingest_frame.py ;
             wait %1"
         depends_on:
-            minio1:
-                condition: service_healthy
-
-    #ingester:
-        #image: python:3.9
-        #network_mode: "service:science_archive"
-        #mem_limit: "512m"
-        #volumes:
-            #- ./example_data:/example_data
-            #- ./scripts/science_archive:/scripts
-        #environment:
-            #- API_ROOT=http://localhost:9500/
-            #- BUCKET=ocs-example-bucket
-            #- OPENTSDB_PYTHON_METRICS_TEST_MODE=True
-            #- AWS_ACCESS_KEY_ID=minio
-            #- AWS_SECRET_ACCESS_KEY=minio123
-            #- AWS_DEFAULT_REGION=minioregion
-            #- S3_ENDPOINT_URL=http://localhost:9000/
-        #command: >
-            #sh -c "
-            #until $$(curl --output /dev/null --silent --head --fail http://localhost:9500); do sleep 1; done;
-            #pip install ocs_ingester boto3;
-
-            #export AUTH_TOKEN=$$(\
-            #curl --data \"username=test_user&password=test_pass\" http://localhost:9500/api-token-auth/ | \
-            #python3 -c \"import sys, json; print(json.load(sys.stdin)['token'])\"
-            #);
-            #echo $AUTH_TOKEN
-
-            #python /scripts/init_ingester_routine.py ;
-            #"
-        #depends_on:
-            #- science_archive
+        - observationportal
+        - minio1
+        - minio2
+        - minio3
+        - minio4
 
     redis:
         image: redis:3.2
