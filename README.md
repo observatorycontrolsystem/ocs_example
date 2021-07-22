@@ -2,11 +2,22 @@
 
 ## A pre-populated demo of the OCS services
 
-This example project provides a docker-compose file which launches an [Observation Portal](https://github.com/observatorycontrolsystem/observation-portal), a [web interface](https://github.com/observatorycontrolsystem/ocs-example-frontend) for the observation portal, a [Configuration Database](https://github.com/observatorycontrolsystem/configdb), a [Downtime Database](https://github.com/observatorycontrolsystem/downtime), and an [Adaptive Scheduler](https://github.com/observatorycontrolsystem/adaptive_scheduler), all connected together with pre-populated sample data.
+This example project provides a docker-compose file which launches 
+an [Observation Portal](https://github.com/observatorycontrolsystem/observation-portal), 
+a [web interface](https://github.com/observatorycontrolsystem/ocs-example-frontend) for the observation portal, 
+a [Configuration Database](https://github.com/observatorycontrolsystem/configdb), 
+a [Downtime Database](https://github.com/observatorycontrolsystem/downtime), 
+a [Science Archive](https://github.com/observatorycontrolsystem/science-archive), 
+and an [Adaptive Scheduler](https://github.com/observatorycontrolsystem/adaptive_scheduler), 
+all connected together with pre-populated sample data.
 
 ## Credentials
 
-By default, the Observation Portal will have a single account created with the username `test_user` and the password `test_pass`. This can be used to login to the Observation Portal or the admin interface of the Configuration or Downtime Databases.
+By default, the Observation Portal will have a single account created with the username `test_user` and the password `test_pass`. This can be used to login to the Observation Portal, or the admin interface of the Science Archive, Configuration Database, or Downtime Database.
+
+Minio is setup with the access key `minio_access_key` and secret `minio_secret`. 
+
+These can be configured in the docker compose file.
 
 ## Example Data
 
@@ -63,3 +74,15 @@ By default, the docker-compose file has ports set up such that:
 * The **Configuration Database** is accessible from <http://127.0.0.1:7000/> and its admin interface is accessible from <http://127.0.0.1:7000/admin/>.
 
 * The **Downtime Database** is accessible from <http://127.0.0.1:7500/> and its admin interface is accessible from <http://127.0.0.1:7500/admin/>.
+
+* The **Science Archive** should be accessible from <http://127.0.0.1:9500/> and its admin interface is accessible from <http://127.0.0.1:9500/admin/>.
+
+* The **minio server** which emulates S3 should be accessible from <http://127.0.0.1:9000/>. 
+
+
+## Adding data to the Science Archive
+
+The easiest way to add data to the science archive is by using the [ingester library](https://github.com/observatorycontrolsystem/ocs_ingester).
+You can find a working example at [scripts/science_archive/ingest_frame.py](scripts/science_archive/ingest_frame.py).
+This script is run once when starting up the ocs_example project and uploads an example file. All data in the science archive can be found in the [science archive api](http://localhost:9500/frames/).
+More information about configuring and running the ingester can be found in the [ingester docs](https://ingester.readthedocs.io/en/latest/README.html).

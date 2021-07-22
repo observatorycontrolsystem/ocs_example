@@ -1,12 +1,12 @@
-version: "2.1"
+version: "3.7"
 
 services:
     db:
-        image: postgres:10.4-alpine
+        image: postgis/postgis:13-master
         environment:
             - POSTGRES_USER=postgres
-            - POSTGRES_MULTIPLE_DATABASES=configdb,observationportal,downtime
-            - POSTGRES_PASSWORD=
+            - POSTGRES_MULTIPLE_DATABASES=configdb,observationportal,downtime,sciencearchive
+            - POSTGRES_PASSWORD=postgrespass
         volumes:
             - ./docker-postgresql-multiple-databases:/docker-entrypoint-initdb.d
         mem_limit: "2048m"
@@ -25,7 +25,7 @@ services:
             - DB_HOST=db
             - DB_NAME=configdb
             - DB_USER=postgres
-            - DB_PASS=
+            - DB_PASS=postgrespass
             - SECRET_KEY=ocs_example_configdb_secret_key
             - DEBUG=true
             - OAUTH_CLIENT_ID=configdb_application_client_id
@@ -39,7 +39,7 @@ services:
             timeout: 5s
             retries: 5
         command: >
-            sh -c "python manage.py migrate 
+            bash -c "python manage.py migrate 
             && python manage.py init_e2e_data -s ogg --latitude 20.707 --longitude -156.258 --instrument-state=SCHEDULABLE
             && python manage.py runserver 0.0.0.0:7000"
         depends_on:
@@ -55,7 +55,7 @@ services:
             - DB_HOST=db
             - DB_NAME=downtime
             - DB_USER=postgres
-            - DB_PASS=
+            - DB_PASS=postgrespass
             - SECRET_KEY=ocs_example_downtime_secret_key
             - CONFIGDB_URL=http://configdb:7000
             - OAUTH_CLIENT_ID=downtime_application_client_id
@@ -84,7 +84,7 @@ services:
             - DB_HOST=db
             - DB_NAME=observationportal
             - DB_USER=postgres
-            - DB_PASS=
+            - DB_PASSWORD=postgrespass
             - DEBUG=true
             - SECRET_KEY=ocs_example_obs_portal_secret_key
             - CONFIGDB_URL=http://configdb:7000
@@ -100,6 +100,7 @@ services:
             && python manage.py create_user -u test_user -p test_pass --superuser --token=sutoken1234abcd
             && python manage.py create_application -u test_user -n ConfigDB --client-id configdb_application_client_id --client-secret configdb_application_client_secret --redirect-uris http://127.0.0.1:7000
             && python manage.py create_application -u test_user -n Downtime --client-id downtime_application_client_id --client-secret downtime_application_client_secret --redirect-uris http://127.0.0.1:7500/
+            && python manage.py create_application -u test_user -n Archive --client-id science_archive_application_client_id --client-secret science_archive_application_client_secret --redirect-uris http://127.0.0.1:9500/
             && python manage.py create_semester --id TestSemester
             && python manage.py create_proposal --id TestProposal --active --direct --pi test_user --time-allocation
             && python manage.py create_example_requests -p TestProposal -s test_user
@@ -159,6 +160,151 @@ services:
             -  INTERNAL_OBSERVATION_PORTAL_API_URL=http://127.0.0.1:8000
         entrypoint: /entrypoint.sh
 
+    # The reason for using four minio servers:
+    # The science archive requires an "s3" bucket with versioning enabled.
+    # In order to use versioning, minio requires a distributed erasure code setup.
+    # Distributed minio setups require at least four servers.
+    # For details, see: https://docs.min.io/docs/minio-erasure-code-quickstart-guide.html
+    minio1:
+        image: minio/minio:RELEASE.2021-06-17T00-10-46Z
+        volumes:
+            - data1-1:/data1
+            - data1-2:/data2
+        expose:
+            - "9000"
+        environment:
+            MINIO_ROOT_USER: minio_access_key
+            MINIO_ROOT_PASSWORD: minio_secret
+            MINIO_REGION_NAME: minio_region
+        command: server http://minio{1...4}/data{1...2}
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+            interval: 30s
+            timeout: 20s
+            retries: 3
+    minio2:
+        image: minio/minio:RELEASE.2021-06-17T00-10-46Z
+        volumes:
+            - data2-1:/data1
+            - data2-2:/data2
+        expose:
+            - "9000"
+        environment:
+            MINIO_ROOT_USER: minio_access_key
+            MINIO_ROOT_PASSWORD: minio_secret
+            MINIO_REGION_NAME: minio_region
+        command: server http://minio{1...4}/data{1...2}
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+            interval: 30s
+            timeout: 20s
+            retries: 3
+    minio3:
+        image: minio/minio:RELEASE.2021-06-17T00-10-46Z
+        volumes:
+            - data3-1:/data1
+            - data3-2:/data2
+        expose:
+            - "9000"
+        environment:
+            MINIO_ROOT_USER: minio_access_key
+            MINIO_ROOT_PASSWORD: minio_secret
+            MINIO_REGION_NAME: minio_region
+        command: server http://minio{1...4}/data{1...2}
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+            interval: 30s
+            timeout: 20s
+            retries: 3
+    minio4:
+        image: minio/minio:RELEASE.2021-06-17T00-10-46Z
+        volumes:
+            - data4-1:/data1
+            - data4-2:/data2
+        expose:
+            - "9000"
+        environment:
+            MINIO_ROOT_USER: minio_access_key
+            MINIO_ROOT_PASSWORD: minio_secret
+            MINIO_REGION_NAME: minio_region
+        command: server http://minio{1...4}/data{1...2}
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+            interval: 30s
+            timeout: 20s
+            retries: 3
+
+    nginx:
+        image: nginx:1.19.2-alpine
+        volumes:
+        - ./nginx.conf:/etc/nginx/nginx.conf:ro
+        network_mode: "service:science_archive"
+        depends_on:
+        - minio1
+        - minio2
+        - minio3
+        - minio4
+
+    science_archive:
+        image: observatorycontrolsystem/science-archive:1.78
+        container_name: sciencearchive
+        ports:
+            - "9000:9000"  # minio
+            - "9500:9500"  # archive api
+        environment:
+            - DEBUG=True  # must be true to load static files
+            - DB_HOST=db
+            - DB_HOST_READER=db
+            - DB_NAME=sciencearchive
+            - DB_USER=postgres
+            - DB_PASS=postgrespass
+            - SECRET_KEY=ocs_example_science_archive_secret_key
+            - AWS_ACCESS_KEY_ID=minio_access_key
+            - AWS_SECRET_ACCESS_KEY=minio_secret
+            - AWS_DEFAULT_REGION=minio_region
+            - AWS_BUCKET=ocs-example-bucket
+            - S3_ENDPOINT_URL=http://localhost:9000/
+            - OAUTH_CLIENT_ID=science_archive_application_client_id
+            - OAUTH_CLIENT_SECRET=science_archive_application_client_secret
+            - OAUTH_TOKEN_URL=http://observation-portal:8000/o/token/
+            - OAUTH_PROFILE_URL=http://observation-portal:8000/api/profile/
+            - PROCESSED_EXCHANGE_ENABLED=False
+            # Additional variables for the ingester:
+            - API_ROOT=http://localhost:9500/
+            - BUCKET=ocs-example-bucket
+            - OPENTSDB_PYTHON_METRICS_TEST_MODE=True
+        mem_limit: "512m"
+        restart: always
+        volumes: 
+            - ./example_data:/example_data
+            - ./scripts/science_archive:/scripts
+        healthcheck:
+            test: ["CMD-SHELL", "wget localhost:9500/ -q -O - > /dev/null 2>&1"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        command: >
+            sh -c "python manage.py migrate ;
+            python manage.py collectstatic --no-input ;
+            python manage.py runserver 0.0.0.0:9500 &
+            pip install ocs_ingester requests ;
+
+            export AUTH_TOKEN=$$(\
+            echo 'from django.contrib.auth.models import User; 
+            User.objects.create_superuser(\"test_user\", \"admin@example.com\", \"test_pass\"); 
+            print(User.objects.first().auth_token)' | python manage.py shell
+            );
+
+            python /scripts/initialize_bucket.py ;
+            python /scripts/ingest_frame.py ;
+            wait %1"
+        depends_on:
+        - observationportal
+        - minio1
+        - minio2
+        - minio3
+        - minio4
+
     redis:
         image: redis:3.2
         command: ["redis-server", "--appendonly", "yes"]
@@ -172,3 +318,15 @@ services:
             interval: 10s
             timeout: 5s
             retries: 30
+
+## By default this config uses default local driver,
+## For custom volumes replace with volume driver configuration.
+volumes:
+    data1-1:
+    data1-2:
+    data2-1:
+    data2-2:
+    data3-1:
+    data3-2:
+    data4-1:
+    data4-2:
