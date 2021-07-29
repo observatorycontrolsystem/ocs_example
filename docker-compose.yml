@@ -175,7 +175,7 @@ services:
         environment:
             MINIO_ROOT_USER: minio_access_key
             MINIO_ROOT_PASSWORD: minio_secret
-            MINIO_REGION_NAME: minio_region
+            MINIO_REGION_NAME: minio-region
         command: server http://minio{1...4}/data{1...2}
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -192,7 +192,7 @@ services:
         environment:
             MINIO_ROOT_USER: minio_access_key
             MINIO_ROOT_PASSWORD: minio_secret
-            MINIO_REGION_NAME: minio_region
+            MINIO_REGION_NAME: minio-region
         command: server http://minio{1...4}/data{1...2}
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -209,7 +209,7 @@ services:
         environment:
             MINIO_ROOT_USER: minio_access_key
             MINIO_ROOT_PASSWORD: minio_secret
-            MINIO_REGION_NAME: minio_region
+            MINIO_REGION_NAME: minio-region
         command: server http://minio{1...4}/data{1...2}
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -226,7 +226,7 @@ services:
         environment:
             MINIO_ROOT_USER: minio_access_key
             MINIO_ROOT_PASSWORD: minio_secret
-            MINIO_REGION_NAME: minio_region
+            MINIO_REGION_NAME: minio-region
         command: server http://minio{1...4}/data{1...2}
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -261,7 +261,7 @@ services:
             - SECRET_KEY=ocs_example_science_archive_secret_key
             - AWS_ACCESS_KEY_ID=minio_access_key
             - AWS_SECRET_ACCESS_KEY=minio_secret
-            - AWS_DEFAULT_REGION=minio_region
+            - AWS_DEFAULT_REGION=minio-region
             - AWS_BUCKET=ocs-example-bucket
             - S3_ENDPOINT_URL=http://localhost:9000/
             - OAUTH_CLIENT_ID=science_archive_application_client_id
@@ -289,7 +289,7 @@ services:
             python manage.py runserver 0.0.0.0:9500 &
             pip install ocs_ingester requests ;
             export AUTH_TOKEN=$$( echo 'from django.contrib.auth.models import User; User.objects.create_superuser(\"test_user\", \"admin@example.com\", \"test_pass\"); print(User.objects.first().auth_token)' | python manage.py shell);
-            echo $$AUTH_TOKEN
+            echo $$AUTH_TOKEN ;
             python /scripts/initialize_bucket.py ;
             python /scripts/ingest_frame.py ;
             wait %1"
