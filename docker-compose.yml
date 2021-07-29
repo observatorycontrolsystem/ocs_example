@@ -288,18 +288,13 @@ services:
             python manage.py collectstatic --no-input ;
             python manage.py runserver 0.0.0.0:9500 &
             pip install ocs_ingester requests ;
-
-            export AUTH_TOKEN=$$(\
-            echo 'from django.contrib.auth.models import User; 
-            User.objects.create_superuser(\"test_user\", \"admin@example.com\", \"test_pass\"); 
-            print(User.objects.first().auth_token)' | python manage.py shell
-            );
-
+            export AUTH_TOKEN=$$( echo 'from django.contrib.auth.models import User; User.objects.create_superuser(\"test_user\", \"admin@example.com\", \"test_pass\"); print(User.objects.first().auth_token)' | python manage.py shell);
+            echo $$AUTH_TOKEN
             python /scripts/initialize_bucket.py ;
             python /scripts/ingest_frame.py ;
             wait %1"
         depends_on:
-        - observationportal
+        - observation-portal
         - minio1
         - minio2
         - minio3
