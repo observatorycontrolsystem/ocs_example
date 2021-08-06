@@ -67,22 +67,22 @@ from within this directory. Once running, you can use the [credentials given abo
 
 By default, the docker-compose file has ports set up such that:
 
-* The **Observation Portal** API is accessible from <http://127.0.0.1:8000/api/>, and its admin interface is accessible from <http://127.0.0.1:8000/admin/>.
+* The **Observation Portal** API is accessible from <http://localhost:8000/api/>, and its admin interface is accessible from <http://localhost:8000/admin/>.
 
-* The observation portal's **Web Interface** is accessible from <http://127.0.0.1:8080/>
+* The observation portal's **Web Interface** is accessible from <http://localhost:8080/>
 
-* The **Configuration Database** is accessible from <http://127.0.0.1:7000/> and its admin interface is accessible from <http://127.0.0.1:7000/admin/>.
+* The **Configuration Database** is accessible from <http://localhost:7000/> and its admin interface is accessible from <http://localhost:7000/admin/>.
 
-* The **Downtime Database** is accessible from <http://127.0.0.1:7500/> and its admin interface is accessible from <http://127.0.0.1:7500/admin/>.
+* The **Downtime Database** is accessible from <http://localhost:7500/> and its admin interface is accessible from <http://localhost:7500/admin/>.
 
-* The **Science Archive** should be accessible from <http://127.0.0.1:9500/> and its admin interface is accessible from <http://127.0.0.1:9500/admin/>.
+* The **Science Archive** is accessible from <http://localhost:9500/> and its admin interface is accessible from <http://localhost:9500/admin/>.
 
-* The **minio server** which emulates S3 should be accessible from <http://127.0.0.1:9000/>. 
+* The **minio server** which emulates S3 is accessible from <http://localhost:9000/>. 
 
 
 ## Adding data to the Science Archive
 
 The easiest way to add data to the science archive is by using the [ingester library](https://github.com/observatorycontrolsystem/ocs_ingester).
-You can find a working example at [scripts/science_archive/ingest_frame.py](scripts/science_archive/ingest_frame.py).
-This script is run once when starting up the ocs_example project and uploads an example file. All data in the science archive can be found in the [science archive api](http://localhost:9500/frames/).
+You can find a working example at [scripts/science_archive/ingest_frame.py](scripts/science_archive/ingest_sample_data.py).
+This script is run once when starting up the ocs_example project and uploads an example file for each completed observation. All data in the science archive can be found in the [science archive api](http://localhost:9500/frames/).
 More information about configuring and running the ingester can be found in the [ingester docs](https://ingester.readthedocs.io/en/latest/README.html).
