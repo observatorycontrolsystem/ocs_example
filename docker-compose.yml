@@ -91,16 +91,16 @@ services:
             - DOWNTIMEDB_URL=http://downtime:7500
             - ELASTICSEARCH_URL=
             - CORS_ALLOW_CREDENTIALS=true
-            - CORS_ORIGIN_WHITELIST=http://127.0.0.1:8080,http://localhost:8080
-            - CSRF_TRUSTED_ORIGINS=127.0.0.1:8080,localhost:8080
+            - CORS_ORIGIN_WHITELIST=http://localhost:8080,http://127.0.0.1:8080
+            - CSRF_TRUSTED_ORIGINS=localhost:8080,127.0.0.1:8080
         mem_limit: "512m"
         restart: always
         command: >
             sh -c "python manage.py migrate 
             && python manage.py create_user -u test_user -p test_pass --superuser --token=sutoken1234abcd
-            && python manage.py create_application -u test_user -n ConfigDB --client-id configdb_application_client_id --client-secret configdb_application_client_secret --redirect-uris http://127.0.0.1:7000
-            && python manage.py create_application -u test_user -n Downtime --client-id downtime_application_client_id --client-secret downtime_application_client_secret --redirect-uris http://127.0.0.1:7500/
-            && python manage.py create_application -u test_user -n Archive --client-id science_archive_application_client_id --client-secret science_archive_application_client_secret --redirect-uris http://127.0.0.1:9500/
+            && python manage.py create_application -u test_user -n ConfigDB --client-id configdb_application_client_id --client-secret configdb_application_client_secret --redirect-uris http://localhost:7000
+            && python manage.py create_application -u test_user -n Downtime --client-id downtime_application_client_id --client-secret downtime_application_client_secret --redirect-uris http://localhost:7500/
+            && python manage.py create_application -u test_user -n Archive --client-id science_archive_application_client_id --client-secret science_archive_application_client_secret --redirect-uris http://localhost:9500/
             && python manage.py create_semester --id TestSemester
             && python manage.py create_proposal --id TestProposal --active --direct --pi test_user --time-allocation
             && python manage.py create_example_requests -p TestProposal -s test_user
@@ -156,8 +156,8 @@ services:
             - "8080:8080"
         restart: always
         environment:
-            -  VUE_APP_OBSERVATION_PORTAL_API_URL=http://127.0.0.1:8000
-            -  INTERNAL_OBSERVATION_PORTAL_API_URL=http://127.0.0.1:8000
+            -  VUE_APP_OBSERVATION_PORTAL_API_URL=http://localhost:8000
+            -  INTERNAL_OBSERVATION_PORTAL_API_URL=http://localhost:8000
         entrypoint: /entrypoint.sh
 
     # The reason for using four minio servers:
@@ -271,6 +271,7 @@ services:
             - PROCESSED_EXCHANGE_ENABLED=False
             # Additional variables for the ingester:
             - API_ROOT=http://localhost:9500/
+            - OBSERVATION_PORTAL_BASE_URL=http://observation-portal:8000/api
             - BUCKET=ocs-example-bucket
             - OPENTSDB_PYTHON_METRICS_TEST_MODE=True
         mem_limit: "512m"
@@ -291,7 +292,7 @@ services:
             export AUTH_TOKEN=$$( echo 'from django.contrib.auth.models import User; User.objects.create_superuser(\"test_user\", \"admin@example.com\", \"test_pass\"); print(User.objects.first().auth_token)' | python manage.py shell);
             echo $$AUTH_TOKEN ;
             python /scripts/initialize_bucket.py ;
-            python /scripts/ingest_frame.py ;
+            python /scripts/ingest_sample_data.py ;
             wait %1"
         depends_on:
         - observation-portal
