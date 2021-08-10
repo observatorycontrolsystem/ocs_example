@@ -83,6 +83,6 @@ By default, the docker-compose file has ports set up such that:
 ## Adding data to the Science Archive
 
 The easiest way to add data to the science archive is by using the [ingester library](https://github.com/observatorycontrolsystem/ocs_ingester).
-You can find a working example at [scripts/science_archive/ingest_frame.py](scripts/science_archive/ingest_sample_data.py).
+You can find a working example at [scripts/science_archive/ingest_sample_data.py](scripts/science_archive/ingest_sample_data.py).
 This script is run once when starting up the ocs_example project and uploads an example file for each completed observation. All data in the science archive can be found in the [science archive api](http://localhost:9500/frames/).
 More information about configuring and running the ingester can be found in the [ingester docs](https://ingester.readthedocs.io/en/latest/README.html).

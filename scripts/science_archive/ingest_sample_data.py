@@ -4,7 +4,6 @@ from astropy.io import fits
 import requests
 import urllib
 import time
-from pprint import pprint
 
 ################################################################################
 # The following environment variables are required by the ingester.
@@ -59,7 +58,6 @@ admin_archive_token = requests.post(
 # Set as an environment variable so the ingester can use it.
 # This must happen before importing the ingester library.
 os.environ['AUTH_TOKEN'] = admin_archive_token
-print(os.getenv('AUTH_TOKEN'))
 
 # OBSERVATION PORTAL TOKEN
 # First, make sure the observation portal is accepting connections before we query it.
@@ -128,14 +126,15 @@ def get_completed_observations():
     obs_auth_header = { "Authorization": f"Token {observations_token}" }
 
     observations = requests.get(observations_endpoint, headers=obs_auth_header).json()
-    pprint(len(observations["results"]))
+    print(f'Adding example data for {len(observations["results"])} completed observations')
     return observations["results"]
 
 def header_vals_from_observation(obs):
+    obs_end_time = obs['end'].replace('Z', '')  # offset-naive datetime string
     return {
-        #"RLEVEL": "",
-        "DAY_OBS": obs['end'].split('T')[0],
-        "DATE_OBS": obs['end'],
+        "RLEVEL": "91",  # arbitrarily, assume the data is fully reduced.
+        "DAY-OBS": obs_end_time.split('T')[0].replace('-', ''),
+        "DATE-OBS": obs_end_time,
         "PROPID": obs['proposal'],
         "INSTRUME": obs['request']['configurations'][0]['instrument_name'],
         "OBJECT": obs['request']['configurations'][0]['target']['name'],
@@ -150,9 +149,21 @@ def header_vals_from_observation(obs):
     }
 
 def filename_from_observation_header_vals(header_vals):
-    filename = f"{header_vals['SITEID']}{header_vals['TELID']}"
-    filename += f"-{header_vals['INSTRUME']}-{header_vals['DAY_OBS'].replace('-', '')}"
-    filename += f"-{str(filename_counter).zfill(4)}-e91.fits.fz"
+    obstype_to_letter = {
+        'EXPOSE': 'e',
+        'BIAS': 'b',
+        'DARK': 'd',
+        'SKYFLAT': 'f',
+        'GUIDE': 'g',
+        'STANDARD': 's',
+        'LAMPFLAT': 'w',
+        'EXPERIMENTAL': 'x'
+    }
+    filename = f"{header_vals['SITEID']}{header_vals['TELID']}-"\
+            + f"{header_vals['INSTRUME']}-{header_vals['DAY-OBS']}-"\
+            + f"{str(filename_counter).zfill(4)}-"\
+            + f"{obstype_to_letter[header_vals['OBSTYPE']]}"\
+            + f"{header_vals['RLEVEL']}.fits.fz"
     return filename
 
 
