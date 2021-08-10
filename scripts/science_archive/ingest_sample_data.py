@@ -141,6 +141,8 @@ def header_vals_from_observation(obs):
         "SITEID": obs['site'],
         "TELID": obs['telescope'],
         "EXPTIME": obs['request']['configurations'][0]['instrument_configs'][0]['exposure_time'],
+        # Assume the image is from an imager. A spectrograph would set the fits FILTER header 
+        # using ...['optical_elements']['slit'] instead of ...['optical_elements']['filter']
         "FILTER": obs['request']['configurations'][0]['instrument_configs'][0]['optical_elements']['filter'],
         "OBSTYPE": obs['request']['configurations'][0]['type'],
         "BLKUID": obs['id'],
