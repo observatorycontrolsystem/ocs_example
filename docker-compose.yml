@@ -134,7 +134,7 @@ services:
         mem_limit: "512m"
         restart: always
         command: >
-            sh -c "sleep 60 && python manage.py runscript observation_portal.task_scheduler"
+            sh -c "python manage.py runscript observation_portal.task_scheduler"
         depends_on:
             db:
                 condition: service_healthy
@@ -163,7 +163,7 @@ services:
         mem_limit: "512m"
         restart: always
         command: >
-            sh -c "sleep 60 && python manage.py rundramatiq --processes 2 --threads 4"
+            sh -c "python manage.py rundramatiq --processes 2 --threads 4"
         depends_on:
             db:
                 condition: service_healthy
