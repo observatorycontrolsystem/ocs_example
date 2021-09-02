@@ -113,8 +113,6 @@ services:
                 condition: service_healthy
             configdb:
                 condition: service_healthy
-            redis:
-                condition: service_healthy
 
     dramatiq_task_scheduler:
         image: observatorycontrolsystem/observation-portal:3.1.13
