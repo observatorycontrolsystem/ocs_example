@@ -93,6 +93,8 @@ services:
             - CORS_ALLOW_CREDENTIALS=true
             - CORS_ORIGIN_WHITELIST=http://localhost:8080,http://127.0.0.1:8080
             - CSRF_TRUSTED_ORIGINS=localhost:8080,127.0.0.1:8080
+            - DRAMATIQ_BROKER_HOST=redis
+            - DRAMATIQ_BROKER_PORT=6379
         mem_limit: "512m"
         restart: always
         command: >
@@ -110,6 +112,64 @@ services:
             db:
                 condition: service_healthy
             configdb:
+                condition: service_healthy
+
+    dramatiq_task_scheduler:
+        image: observatorycontrolsystem/observation-portal:3.1.13
+        environment:
+            - DB_HOST=db
+            - DB_NAME=observationportal
+            - DB_USER=postgres
+            - DB_PASSWORD=postgrespass
+            - DEBUG=true
+            - SECRET_KEY=ocs_example_obs_portal_secret_key
+            - CONFIGDB_URL=http://configdb:7000
+            - DOWNTIMEDB_URL=http://downtime:7500
+            - ELASTICSEARCH_URL=
+            - CORS_ALLOW_CREDENTIALS=true
+            - CORS_ORIGIN_WHITELIST=http://localhost:8080,http://127.0.0.1:8080
+            - CSRF_TRUSTED_ORIGINS=localhost:8080,127.0.0.1:8080
+            - DRAMATIQ_BROKER_HOST=redis
+            - DRAMATIQ_BROKER_PORT=6379
+        mem_limit: "512m"
+        restart: always
+        command: >
+            sh -c "python manage.py runscript observation_portal.task_scheduler"
+        depends_on:
+            db:
+                condition: service_healthy
+            configdb:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+
+    dramatiq_worker:
+        image: observatorycontrolsystem/observation-portal:3.1.13
+        environment:
+            - DB_HOST=db
+            - DB_NAME=observationportal
+            - DB_USER=postgres
+            - DB_PASSWORD=postgrespass
+            - DEBUG=true
+            - SECRET_KEY=ocs_example_obs_portal_secret_key
+            - CONFIGDB_URL=http://configdb:7000
+            - DOWNTIMEDB_URL=http://downtime:7500
+            - ELASTICSEARCH_URL=
+            - CORS_ALLOW_CREDENTIALS=true
+            - CORS_ORIGIN_WHITELIST=http://localhost:8080,http://127.0.0.1:8080
+            - CSRF_TRUSTED_ORIGINS=localhost:8080,127.0.0.1:8080
+            - DRAMATIQ_BROKER_HOST=redis
+            - DRAMATIQ_BROKER_PORT=6379
+        mem_limit: "512m"
+        restart: always
+        command: >
+            sh -c "python manage.py rundramatiq --processes 2 --threads 4"
+        depends_on:
+            db:
+                condition: service_healthy
+            configdb:
+                condition: service_healthy
+            redis:
                 condition: service_healthy
 
     adaptive_scheduler:
