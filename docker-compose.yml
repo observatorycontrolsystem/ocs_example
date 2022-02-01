@@ -375,6 +375,15 @@ services:
             timeout: 5s
             retries: 30
 
+    virtual-site:
+        image: ghcr.io/observatorycontrolsystem/virtual-site:latest
+        restart: always
+        command: >
+            --name=ogg --api-url=http://observation-portal:8000/api
+            --api-token='sutoken1234abcd'
+        depends_on:
+          - observation-portal
+
 ## By default this config uses default local driver,
 ## For custom volumes replace with volume driver configuration.
 volumes:
