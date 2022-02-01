@@ -376,7 +376,7 @@ services:
             retries: 30
 
     virtual-site:
-        image: ghcr.io/observatorycontrolsystem/virtual-site:mvp # TODO: change this once virtual-site/mpv branch is merged
+        image: ghcr.io/observatorycontrolsystem/virtual-site:latest
         restart: always
         command: >
             --name=ogg --api-url=http://observation-portal:8000/api
