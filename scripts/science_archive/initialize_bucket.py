@@ -8,7 +8,7 @@ session = boto3.Session()
 try:
     client = session.client('s3', endpoint_url=os.getenv('S3_ENDPOINT_URL'))
     bucket = client.create_bucket(
-        Bucket=os.getenv('AWS_BUCKET'),
+        Bucket=os.getenv('BUCKET'),
     )
     print(bucket)
 except:
@@ -17,7 +17,7 @@ except:
 # enable versioning
 try:
     resource = session.resource('s3', endpoint_url=os.getenv('S3_ENDPOINT_URL'))
-    bucket = resource.Bucket(os.getenv('AWS_BUCKET'))
+    bucket = resource.Bucket(os.getenv('BUCKET'))
     bucket.Versioning().enable()
     print(f"Enabled versioning on bucket {bucket.name}")
 except:

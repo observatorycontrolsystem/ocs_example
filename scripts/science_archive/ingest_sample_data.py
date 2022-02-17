@@ -214,7 +214,7 @@ for obs in get_completed_observations():
             record = ingester.validate_fits_and_create_archive_record(fileobj)
 
             # Upload the file to our bucket
-            s3_version = ingester.upload_file_to_s3(fileobj)
+            s3_version = ingester.upload_file_to_file_store(fileobj)
 
             # Change the version key to be compatible with the ingester (32 char max)
             # This step is only necessary when using minio. With a real S3 bucket, the 
