@@ -18,7 +18,7 @@ services:
         restart: always
 
     configdb:
-        image: observatorycontrolsystem/configdb:2.1.4
+        image: observatorycontrolsystem/configdb:3.0.0
         ports:
             - "7000:7000"
         environment:
@@ -49,7 +49,7 @@ services:
                 condition: service_healthy
 
     downtime:
-        image: observatorycontrolsystem/downtime:2.3.3
+        image: observatorycontrolsystem/downtime:2.4.0
         ports:
             - "7500:7500"
         environment:
@@ -69,7 +69,6 @@ services:
         restart: always
         command: >
             sh -c "python manage.py migrate
-            && python manage.py shell -c \"from django.contrib.auth.models import User; User.objects.create_superuser('test_user', 'test_user@fake.com', 'test_pass')\"
             && python manage.py create_downtime -s ogg -e doma -t 1m0a -r Weather --offset-hours=24 --duration-hours=24
             && python manage.py create_downtime -s ogg -e clma -t 2m0a -r Maintenance --offset-hours=-48 --duration-hours=24
             && python manage.py runserver 0.0.0.0:7500"
@@ -80,7 +79,7 @@ services:
                 condition: service_healthy
 
     observation-portal:
-        image: observatorycontrolsystem/observation-portal:3.6.9
+        image: observatorycontrolsystem/observation-portal:4.2.0
         ports:
             - "8000:8000"
         environment:
@@ -95,7 +94,7 @@ services:
             - ELASTICSEARCH_URL=
             - CORS_ALLOW_CREDENTIALS=true
             - CORS_ORIGIN_WHITELIST=http://localhost:8080,http://127.0.0.1:8080
-            - CSRF_TRUSTED_ORIGINS=localhost:8080,127.0.0.1:8080
+            - CSRF_TRUSTED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080,http://*
             - DRAMATIQ_BROKER_HOST=redis
             - DRAMATIQ_BROKER_PORT=6379
             - OAUTH_SERVER_KEY=mysecretserverkey12345
@@ -120,7 +119,7 @@ services:
                 condition: service_healthy
 
     dramatiq_task_scheduler:
-        image: observatorycontrolsystem/observation-portal:3.6.9
+        image: observatorycontrolsystem/observation-portal:4.2.0
         environment:
             - DB_HOST=db
             - DB_NAME=observationportal
@@ -130,10 +129,11 @@ services:
             - SECRET_KEY=ocs_example_obs_portal_secret_key
             - CONFIGDB_URL=http://configdb:7000
             - DOWNTIMEDB_URL=http://downtime:7500
+            - dramatiq_prom_db=/tmp
             - ELASTICSEARCH_URL=
             - CORS_ALLOW_CREDENTIALS=true
             - CORS_ORIGIN_WHITELIST=http://localhost:8080,http://127.0.0.1:8080,http://*
-            - CSRF_TRUSTED_ORIGINS=localhost:8080,127.0.0.1:8080,*
+            - CSRF_TRUSTED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080,http://*
             - DRAMATIQ_BROKER_HOST=redis
             - DRAMATIQ_BROKER_PORT=6379
             - OAUTH_SERVER_KEY=mysecretserverkey12345
@@ -151,7 +151,7 @@ services:
                 condition: service_healthy
 
     dramatiq_worker:
-        image: observatorycontrolsystem/observation-portal:3.6.9
+        image: observatorycontrolsystem/observation-portal:4.2.0
         environment:
             - DB_HOST=db
             - DB_NAME=observationportal
@@ -161,10 +161,11 @@ services:
             - SECRET_KEY=ocs_example_obs_portal_secret_key
             - CONFIGDB_URL=http://configdb:7000
             - DOWNTIMEDB_URL=http://downtime:7500
+            - dramatiq_prom_db=/tmp
             - ELASTICSEARCH_URL=
             - CORS_ALLOW_CREDENTIALS=true
             - CORS_ORIGIN_WHITELIST=http://localhost:8080,http://127.0.0.1:8080
-            - CSRF_TRUSTED_ORIGINS=localhost:8080,127.0.0.1:8080
+            - CSRF_TRUSTED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080,http://*
             - DRAMATIQ_BROKER_HOST=redis
             - DRAMATIQ_BROKER_PORT=6379
             - OAUTH_SERVER_KEY=mysecretserverkey12345
@@ -182,7 +183,7 @@ services:
                 condition: service_healthy
 
     adaptive_scheduler:
-        image: observatorycontrolsystem/adaptive_scheduler:1.1.12
+        image: observatorycontrolsystem/adaptive_scheduler:1.2.0
         restart: always
         links:
             -  redis:redis
@@ -315,7 +316,7 @@ services:
         - minio4
 
     science_archive:
-        image: observatorycontrolsystem/science-archive:1.78
+        image: observatorycontrolsystem/science-archive:2.2.3
         container_name: sciencearchive
         ports:
             - "9000:9000"  # minio
@@ -362,8 +363,6 @@ services:
             python manage.py collectstatic --no-input ;
             python manage.py runserver 0.0.0.0:9500 &
             pip install requests ocs_ingester;
-            export AUTH_TOKEN=$$( echo 'from django.contrib.auth.models import User; User.objects.create_superuser(\"test_user\", \"admin@example.com\", \"test_pass\"); print(User.objects.first().auth_token)' | python manage.py shell);
-            echo $$AUTH_TOKEN ;
             python /scripts/initialize_bucket.py ;
             python /scripts/ingest_sample_data.py ;
             wait %1"
