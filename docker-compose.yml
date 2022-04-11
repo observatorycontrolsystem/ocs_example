@@ -246,6 +246,7 @@ services:
             MINIO_ROOT_USER: minio_access_key
             MINIO_ROOT_PASSWORD: minio_secret
             MINIO_REGION_NAME: minio-region
+            MINIO_DOMAIN: localhost
         command: server http://minio{1...4}/data{1...2}
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -263,6 +264,7 @@ services:
             MINIO_ROOT_USER: minio_access_key
             MINIO_ROOT_PASSWORD: minio_secret
             MINIO_REGION_NAME: minio-region
+            MINIO_DOMAIN: localhost
         command: server http://minio{1...4}/data{1...2}
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -280,6 +282,7 @@ services:
             MINIO_ROOT_USER: minio_access_key
             MINIO_ROOT_PASSWORD: minio_secret
             MINIO_REGION_NAME: minio-region
+            MINIO_DOMAIN: localhost
         command: server http://minio{1...4}/data{1...2}
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -297,6 +300,7 @@ services:
             MINIO_ROOT_USER: minio_access_key
             MINIO_ROOT_PASSWORD: minio_secret
             MINIO_REGION_NAME: minio-region
+            MINIO_DOMAIN: localhost
         command: server http://minio{1...4}/data{1...2}
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
