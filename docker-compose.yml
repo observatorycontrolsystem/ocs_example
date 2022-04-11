@@ -18,7 +18,7 @@ services:
         restart: always
 
     configdb:
-        image: observatorycontrolsystem/configdb:2.1.1
+        image: observatorycontrolsystem/configdb:3.0.0
         ports:
             - "7000:7000"
         environment:
@@ -31,6 +31,8 @@ services:
             - OAUTH_CLIENT_ID=configdb_application_client_id
             - OAUTH_CLIENT_SECRET=configdb_application_client_secret
             - OAUTH_TOKEN_URL=http://observation-portal:8000/o/token/
+            - OAUTH_PROFILE_URL=http://observation-portal:8000/api/profile/
+            - OAUTH_SERVER_KEY=mysecretserverkey12345
         mem_limit: "512m"
         restart: always
         healthcheck:
@@ -47,7 +49,7 @@ services:
                 condition: service_healthy
 
     downtime:
-        image: observatorycontrolsystem/downtime:2.3.2
+        image: observatorycontrolsystem/downtime:2.4.0
         ports:
             - "7500:7500"
         environment:
@@ -62,11 +64,11 @@ services:
             - OAUTH_CLIENT_SECRET=downtime_application_client_secret
             - OAUTH_TOKEN_URL=http://observation-portal:8000/o/token/
             - OAUTH_PROFILE_URL=http://observation-portal:8000/api/profile/
+            - OAUTH_SERVER_KEY=mysecretserverkey12345
         mem_limit: "512m"
         restart: always
         command: >
             sh -c "python manage.py migrate
-            && python manage.py shell -c \"from django.contrib.auth.models import User; User.objects.create_superuser('test_user', 'test_user@fake.com', 'test_pass')\"
             && python manage.py create_downtime -s ogg -e doma -t 1m0a -r Weather --offset-hours=24 --duration-hours=24
             && python manage.py create_downtime -s ogg -e clma -t 2m0a -r Maintenance --offset-hours=-48 --duration-hours=24
             && python manage.py runserver 0.0.0.0:7500"
@@ -77,7 +79,7 @@ services:
                 condition: service_healthy
 
     observation-portal:
-        image: observatorycontrolsystem/observation-portal:3.1.13
+        image: observatorycontrolsystem/observation-portal:4.2.0
         ports:
             - "8000:8000"
         environment:
@@ -92,9 +94,11 @@ services:
             - ELASTICSEARCH_URL=
             - CORS_ALLOW_CREDENTIALS=true
             - CORS_ORIGIN_WHITELIST=http://localhost:8080,http://127.0.0.1:8080
-            - CSRF_TRUSTED_ORIGINS=localhost:8080,127.0.0.1:8080
+            - CSRF_TRUSTED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080,http://*
             - DRAMATIQ_BROKER_HOST=redis
             - DRAMATIQ_BROKER_PORT=6379
+            - OAUTH_SERVER_KEY=mysecretserverkey12345
+            - OAUTH_CLIENT_APPS_BASE_URLS=http://configdb:7000,http://downtime:7500,http://science_archive:9500
         mem_limit: "512m"
         restart: always
         command: >
@@ -115,7 +119,7 @@ services:
                 condition: service_healthy
 
     dramatiq_task_scheduler:
-        image: observatorycontrolsystem/observation-portal:3.1.13
+        image: observatorycontrolsystem/observation-portal:4.2.0
         environment:
             - DB_HOST=db
             - DB_NAME=observationportal
@@ -125,12 +129,15 @@ services:
             - SECRET_KEY=ocs_example_obs_portal_secret_key
             - CONFIGDB_URL=http://configdb:7000
             - DOWNTIMEDB_URL=http://downtime:7500
+            - dramatiq_prom_db=/tmp
             - ELASTICSEARCH_URL=
             - CORS_ALLOW_CREDENTIALS=true
-            - CORS_ORIGIN_WHITELIST=http://localhost:8080,http://127.0.0.1:8080
-            - CSRF_TRUSTED_ORIGINS=localhost:8080,127.0.0.1:8080
+            - CORS_ORIGIN_WHITELIST=http://localhost:8080,http://127.0.0.1:8080,http://*
+            - CSRF_TRUSTED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080,http://*
             - DRAMATIQ_BROKER_HOST=redis
             - DRAMATIQ_BROKER_PORT=6379
+            - OAUTH_SERVER_KEY=mysecretserverkey12345
+            - OAUTH_CLIENT_APPS_BASE_URLS=http://configdb:7000,http://downtime:7500,http://sciencearchive:9500
         mem_limit: "512m"
         restart: always
         command: >
@@ -144,7 +151,7 @@ services:
                 condition: service_healthy
 
     dramatiq_worker:
-        image: observatorycontrolsystem/observation-portal:3.1.13
+        image: observatorycontrolsystem/observation-portal:4.2.0
         environment:
             - DB_HOST=db
             - DB_NAME=observationportal
@@ -154,12 +161,15 @@ services:
             - SECRET_KEY=ocs_example_obs_portal_secret_key
             - CONFIGDB_URL=http://configdb:7000
             - DOWNTIMEDB_URL=http://downtime:7500
+            - dramatiq_prom_db=/tmp
             - ELASTICSEARCH_URL=
             - CORS_ALLOW_CREDENTIALS=true
             - CORS_ORIGIN_WHITELIST=http://localhost:8080,http://127.0.0.1:8080
-            - CSRF_TRUSTED_ORIGINS=localhost:8080,127.0.0.1:8080
+            - CSRF_TRUSTED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080,http://*
             - DRAMATIQ_BROKER_HOST=redis
             - DRAMATIQ_BROKER_PORT=6379
+            - OAUTH_SERVER_KEY=mysecretserverkey12345
+            - OAUTH_CLIENT_APPS_BASE_URLS=http://configdb:7000,http://downtime:7500,http://sciencearchive:9500
         mem_limit: "512m"
         restart: always
         command: >
@@ -173,7 +183,7 @@ services:
                 condition: service_healthy
 
     adaptive_scheduler:
-        image: observatorycontrolsystem/adaptive_scheduler:1.1.10
+        image: observatorycontrolsystem/adaptive_scheduler:1.2.0
         restart: always
         links:
             -  redis:redis
@@ -216,8 +226,8 @@ services:
             - "8080:8080"
         restart: always
         environment:
-            -  VUE_APP_OBSERVATION_PORTAL_API_URL=http://localhost:8000
-            -  INTERNAL_OBSERVATION_PORTAL_API_URL=http://localhost:8000
+            -  VUE_APP_OBSERVATION_PORTAL_API_URL=http://127.0.0.1:8000
+            -  INTERNAL_OBSERVATION_PORTAL_API_URL=http://127.0.0.1:8000
         entrypoint: /entrypoint.sh
 
     # The reason for using four minio servers:
@@ -228,14 +238,15 @@ services:
     minio1:
         image: minio/minio:RELEASE.2021-06-17T00-10-46Z
         volumes:
-            - data1-1:/data1
-            - data1-2:/data2
+            - ./data/data1-1:/data1
+            - ./data/data1-2:/data2
         expose:
             - "9000"
         environment:
             MINIO_ROOT_USER: minio_access_key
             MINIO_ROOT_PASSWORD: minio_secret
             MINIO_REGION_NAME: minio-region
+            MINIO_DOMAIN: localhost
         command: server http://minio{1...4}/data{1...2}
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -245,14 +256,15 @@ services:
     minio2:
         image: minio/minio:RELEASE.2021-06-17T00-10-46Z
         volumes:
-            - data2-1:/data1
-            - data2-2:/data2
+            - ./data/data2-1:/data1
+            - ./data/data2-2:/data2
         expose:
             - "9000"
         environment:
             MINIO_ROOT_USER: minio_access_key
             MINIO_ROOT_PASSWORD: minio_secret
             MINIO_REGION_NAME: minio-region
+            MINIO_DOMAIN: localhost
         command: server http://minio{1...4}/data{1...2}
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -262,14 +274,15 @@ services:
     minio3:
         image: minio/minio:RELEASE.2021-06-17T00-10-46Z
         volumes:
-            - data3-1:/data1
-            - data3-2:/data2
+            - ./data/data3-1:/data1
+            - ./data/data3-2:/data2
         expose:
             - "9000"
         environment:
             MINIO_ROOT_USER: minio_access_key
             MINIO_ROOT_PASSWORD: minio_secret
             MINIO_REGION_NAME: minio-region
+            MINIO_DOMAIN: localhost
         command: server http://minio{1...4}/data{1...2}
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -279,14 +292,15 @@ services:
     minio4:
         image: minio/minio:RELEASE.2021-06-17T00-10-46Z
         volumes:
-            - data4-1:/data1
-            - data4-2:/data2
+            - ./data/data4-1:/data1
+            - ./data/data4-2:/data2
         expose:
             - "9000"
         environment:
             MINIO_ROOT_USER: minio_access_key
             MINIO_ROOT_PASSWORD: minio_secret
             MINIO_REGION_NAME: minio-region
+            MINIO_DOMAIN: localhost
         command: server http://minio{1...4}/data{1...2}
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -306,7 +320,7 @@ services:
         - minio4
 
     science_archive:
-        image: observatorycontrolsystem/science-archive:1.78
+        image: observatorycontrolsystem/science-archive:2.2.3
         container_name: sciencearchive
         ports:
             - "9000:9000"  # minio
@@ -319,20 +333,24 @@ services:
             - DB_USER=postgres
             - DB_PASS=postgrespass
             - SECRET_KEY=ocs_example_science_archive_secret_key
+            - FILESTORE_TYPE=s3
             - AWS_ACCESS_KEY_ID=minio_access_key
             - AWS_SECRET_ACCESS_KEY=minio_secret
             - AWS_DEFAULT_REGION=minio-region
             - AWS_BUCKET=ocs-example-bucket
+            - BUCKET=ocs-example-bucket
             - S3_ENDPOINT_URL=http://localhost:9000/
             - OAUTH_CLIENT_ID=science_archive_application_client_id
             - OAUTH_CLIENT_SECRET=science_archive_application_client_secret
             - OAUTH_TOKEN_URL=http://observation-portal:8000/o/token/
             - OAUTH_PROFILE_URL=http://observation-portal:8000/api/profile/
+            - OAUTH_SERVER_KEY=mysecretserverkey12345
+            - CONFIGDB_URL=http://configdb:7000/
+            - NAVBAR_TITLE_URL=http://localhost:9500/
             - PROCESSED_EXCHANGE_ENABLED=False
             # Additional variables for the ingester:
             - API_ROOT=http://localhost:9500/
             - OBSERVATION_PORTAL_BASE_URL=http://observation-portal:8000/api
-            - BUCKET=ocs-example-bucket
             - OPENTSDB_PYTHON_METRICS_TEST_MODE=True
         mem_limit: "512m"
         restart: always
@@ -348,9 +366,7 @@ services:
             sh -c "python manage.py migrate ;
             python manage.py collectstatic --no-input ;
             python manage.py runserver 0.0.0.0:9500 &
-            pip install ocs_ingester requests ;
-            export AUTH_TOKEN=$$( echo 'from django.contrib.auth.models import User; User.objects.create_superuser(\"test_user\", \"admin@example.com\", \"test_pass\"); print(User.objects.first().auth_token)' | python manage.py shell);
-            echo $$AUTH_TOKEN ;
+            pip install requests ocs_ingester;
             python /scripts/initialize_bucket.py ;
             python /scripts/ingest_sample_data.py ;
             wait %1"
@@ -362,7 +378,7 @@ services:
         - minio4
 
     redis:
-        image: redis:3.2
+        image: redis:6.2.6
         command: ["redis-server", "--appendonly", "yes"]
         restart: always
         ports:
@@ -374,15 +390,3 @@ services:
             interval: 10s
             timeout: 5s
             retries: 30
-
-## By default this config uses default local driver,
-## For custom volumes replace with volume driver configuration.
-volumes:
-    data1-1:
-    data1-2:
-    data2-1:
-    data2-2:
-    data3-1:
-    data3-2:
-    data4-1:
-    data4-2:

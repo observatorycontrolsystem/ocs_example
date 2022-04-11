@@ -40,25 +40,6 @@ import time
 # and the auth token for the obs portal used to get completed observations.
 ################################################################################
 
-# SCIENCE ARCHIVE TOKEN
-# These credentials are defined in the science_archive startup command in the 
-# docker compose file when creating the archive user
-archive_username = 'test_user'
-archive_password = 'test_pass'
-
-# Trade a username/password for a token granting science_archive upload permissions
-admin_archive_token = requests.post(
-    'http://localhost:9500/api-token-auth/',
-    data = {
-        'username': archive_username,
-        'password': archive_password
-    }
-).json().get('token')
-
-# Set as an environment variable so the ingester can use it.
-# This must happen before importing the ingester library.
-os.environ['AUTH_TOKEN'] = admin_archive_token
-
 # OBSERVATION PORTAL TOKEN
 # First, make sure the observation portal is accepting connections before we query it.
 obs_portal_ready = False
@@ -74,7 +55,6 @@ while not obs_portal_ready:
 # docker compose file, during user creation.
 obs_portal_username = 'test_user'
 obs_portal_password = 'test_pass'
-
 # Trade the username/password for a token granting access to completed observations
 observations_token_endpoint = os.environ['OBSERVATION_PORTAL_BASE_URL'] + '/api-token-auth/'
 observations_token = requests.post(
@@ -84,6 +64,10 @@ observations_token = requests.post(
         'password': obs_portal_password
     }
 ).json().get('token')
+
+# Set as an environment variable so the ingester can use it.
+# This must happen before importing the ingester library.
+os.environ['AUTH_TOKEN'] = observations_token
 
 
 ################################################################################
@@ -214,7 +198,7 @@ for obs in get_completed_observations():
             record = ingester.validate_fits_and_create_archive_record(fileobj)
 
             # Upload the file to our bucket
-            s3_version = ingester.upload_file_to_s3(fileobj)
+            s3_version = ingester.upload_file_to_file_store(fileobj)
 
             # Change the version key to be compatible with the ingester (32 char max)
             # This step is only necessary when using minio. With a real S3 bucket, the 
