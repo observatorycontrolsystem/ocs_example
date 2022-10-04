@@ -18,7 +18,7 @@ services:
         restart: always
 
     configdb:
-        image: observatorycontrolsystem/configdb:3.0.0
+        image: ghcr.io/observatorycontrolsystem/configdb:3.0.1
         ports:
             - "7000:7000"
         environment:
@@ -49,6 +49,7 @@ services:
                 condition: service_healthy
 
     downtime:
+    # TODO: Make sure we add this to the GHCR
         image: observatorycontrolsystem/downtime:2.4.0
         ports:
             - "7500:7500"
@@ -79,7 +80,7 @@ services:
                 condition: service_healthy
 
     observation-portal:
-        image: observatorycontrolsystem/observation-portal:4.2.0
+        image: ghcr.io/observatorycontrolsystem/observation-portal:4.4.4
         ports:
             - "8000:8000"
         environment:
@@ -119,7 +120,7 @@ services:
                 condition: service_healthy
 
     dramatiq_task_scheduler:
-        image: observatorycontrolsystem/observation-portal:4.2.0
+        image: ghcr.io/observatorycontrolsystem/observation-portal:4.4.4
         environment:
             - DB_HOST=db
             - DB_NAME=observationportal
@@ -151,7 +152,7 @@ services:
                 condition: service_healthy
 
     dramatiq_worker:
-        image: observatorycontrolsystem/observation-portal:4.2.0
+        image: ghcr.io/observatorycontrolsystem/observation-portal:4.4.4
         environment:
             - DB_HOST=db
             - DB_NAME=observationportal
@@ -183,7 +184,8 @@ services:
                 condition: service_healthy
 
     adaptive_scheduler:
-        image: observatorycontrolsystem/adaptive_scheduler:1.2.0
+        # image: observatorycontrolsystem/adaptive_scheduler:1.2.0
+        image: ghcr.io/observatorycontrolsystem/adaptive_scheduler:v1.5.0
         restart: always
         links:
             -  redis:redis
@@ -194,7 +196,7 @@ services:
             -  OBSERVATION_PORTAL_API_TOKEN=sutoken1234abcd
             -  CONFIGDB_URL=http://configdb:7000
             -  DOWNTIMEDB_URL=http://downtime:7500/
-            -  REDIS_URL=redis
+            -  REDIS_URL=redis://redis
             -  TELESCOPE_CLASSES=1m0,2m0
             -  SAVE_PICKLE_INPUT_FILES=False
             -  SAVE_JSON_OUTPUT_FILES=False
@@ -210,8 +212,8 @@ services:
             -  ./data/output:/data/adaptive_scheduler/output_schedule/
             -  ./data/:/data/adaptive_scheduler/
             -  ./logs/:/ocs/adaptive_scheduler/logs/
-        working_dir: /ocs/adaptive_scheduler/
-        command: python as.py
+        # working_dir: /ocs/adaptive_scheduler/
+        command: adaptive-scheduler
         depends_on:
             db:
                 condition: service_healthy
@@ -221,6 +223,7 @@ services:
                 condition: service_healthy
 
     ocs_frontend:
+    # TODO: Make sure we add this to the GHCR
         image: observatorycontrolsystem/ocs-example-frontend:0.1.0
         ports:
             - "8080:8080"
@@ -320,7 +323,8 @@ services:
         - minio4
 
     science_archive:
-        image: observatorycontrolsystem/science-archive:2.2.3
+    # TODO: Make sure we add this to the GHCR
+        image: observatorycontrolsystem/science-archive:2.2.4
         container_name: sciencearchive
         ports:
             - "9000:9000"  # minio
@@ -377,6 +381,71 @@ services:
         - minio3
         - minio4
 
+    science_archive_client:
+        image: ghcr.io/observatorycontrolsystem/science-archive-client:1.1.0
+        container_name: sciencearchive-client
+        ports:
+         - "9600:8080"
+        restart: always
+        environment:
+         - VUE_APP_OBSERVATION_PORTAL_API_URL=http://127.0.0.1:8000
+         - VUE_APP_ARCHIVE_API_URL=http://127.0.0.1:9500
+         - VUE_APP_SIMBAD_SERVICE_URL=http://127.0.0.1:9800
+         - VUE_APP_THUMBNAIL_SERVICE_URL=http://127.0.0.1:9700
+         - VUE_APP_NAVBAR_BRAND_URL=https://lco.global
+         - VUE_APP_BRAND_IMAGE_LARGE=https://cdn.lco.global/mainstyle/img/LCO_logo_transparent_with_coords.png
+         - VUE_APP_BRAND_IMAGE_SMALL=https://cdn.lco.global/mainstyle/img/LCO_logo_transparent_with_coords.png
+         - VUE_APP_DOCUMENTATION_URL=https://lco.global/documentation/archive-documentation/
+         - VUE_APP_ORGANIZATION_HOMEPAGE_LINK=https://lco.global
+         - VUE_APP_TERMS_OF_SERVICE_URL=https://lco.global/observatory/termsofservice/
+         - VUE_APP_PRIVACY_POLICY_URL=https://lco.global/observatory/privacy-policy/
+         - VUE_APP_FEEDBACK_EMAIL=mailto:science-support@lco.global
+         - VUE_APP_GITHUB_API_URL=https://github.com/observatorycontrolsystem/science-archive
+         - VUE_APP_API_DOCUMENTATION_URL=https://developers.lco.global/#archive
+         - VUE_APP_GENERAL_DOCUMENTATION_URL=https://lco.global/documentation/archive-documentation/
+         - "VUE_APP_REDUCTION_LEVEL_OPTIONS={\"0\": \"Raw\", \"91\": \"Processed\"}"
+        depends_on:
+         - science_archive
+
+    thumbnail_service:
+        # image: ghcr.io/observatorycontrolsystem/thumbnail-service:3.0.0
+        image: thumbservice-test
+        container_name: thumbnailservice
+        # network_mode: "bridge"
+        ports:
+         - 9700:8080
+        environment:
+         - ARCHIVE_API_URL=http://sciencearchive:9500/
+         - AWS_ACCESS_KEY_ID=minio_access_key
+         - AWS_SECRET_ACCESS_KEY=minio_secret
+         - AWS_DEFAULT_REGION=minio-region
+         - AWS_BUCKET=ocs-example-bucket
+         - TMP_DIR=/thumbnails/
+        restart: always
+        volumes: 
+            - ./data/thumbnails:/thumbnails
+        command: >
+            sh -c "gunicorn
+            --config=thumbservice/config.py
+            --bind=0.0.0.0:8080
+            --worker-class=gevent
+            --access-logfile=-
+            --error-logfile=-
+            thumbservice.thumbservice:app"
+        depends_on:
+         - science_archive
+
+    simbad2k:
+        image: ghcr.io/observatorycontrolsystem/simbad2k:1.1.0
+        container_name: simbad2k
+        ports:
+         - 9800:5000
+        environment:
+         - XDG_CACHE_HOME=/tmp/astropy-cache
+         - XDG_CONFIG_HOME=/tmp/astropy-config
+        depends_on:
+         - science_archive
+
     redis:
         image: redis:6.2.6
         command: ["redis-server", "--appendonly", "yes"]
@@ -390,3 +459,4 @@ services:
             interval: 10s
             timeout: 5s
             retries: 30
+
