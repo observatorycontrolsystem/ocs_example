@@ -49,8 +49,7 @@ services:
                 condition: service_healthy
 
     downtime:
-    # TODO: Make sure we add this to the GHCR
-        image: observatorycontrolsystem/downtime:2.4.0
+        image: ghcr.io/observatorycontrolsystem/downtime:2.4.0
         ports:
             - "7500:7500"
         environment:
@@ -184,7 +183,6 @@ services:
                 condition: service_healthy
 
     adaptive_scheduler:
-        # image: observatorycontrolsystem/adaptive_scheduler:1.2.0
         image: ghcr.io/observatorycontrolsystem/adaptive_scheduler:v1.5.0
         restart: always
         links:
@@ -208,11 +206,10 @@ services:
             -  KERNEL_ALGORITHM=SCIP
         volumes:
             # Edit these volume maps to wherever you want to store the log files and input/output data sets
-            -  ./data/input:/data/adaptive_scheduler/input_states/
-            -  ./data/output:/data/adaptive_scheduler/output_schedule/
-            -  ./data/:/data/adaptive_scheduler/
-            -  ./logs/:/ocs/adaptive_scheduler/logs/
-        # working_dir: /ocs/adaptive_scheduler/
+            -  ./data/input:/app/data/input_states/
+            -  ./data/output:/app/data/output_schedule/
+            -  ./data/:/app/data/
+            -  ./logs/:/app/logs/
         command: adaptive-scheduler
         depends_on:
             db:
@@ -223,8 +220,7 @@ services:
                 condition: service_healthy
 
     ocs_frontend:
-    # TODO: Make sure we add this to the GHCR
-        image: observatorycontrolsystem/ocs-example-frontend:0.1.0
+        image: ghcr.io/observatorycontrolsystem/ocs-example-frontend:0.1.1
         ports:
             - "8080:8080"
         restart: always
@@ -323,8 +319,7 @@ services:
         - minio4
 
     science_archive:
-    # TODO: Make sure we add this to the GHCR
-        image: observatorycontrolsystem/science-archive:2.2.4
+        image: ghcr.io/observatorycontrolsystem/science-archive:2.3.1
         container_name: sciencearchive
         ports:
             - "9000:9000"  # minio
@@ -411,7 +406,6 @@ services:
         # image: ghcr.io/observatorycontrolsystem/thumbnail-service:3.0.0
         image: thumbservice-test
         container_name: thumbnailservice
-        # network_mode: "bridge"
         ports:
          - 9700:8080
         environment:
