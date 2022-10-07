@@ -186,7 +186,7 @@ services:
         image: ghcr.io/observatorycontrolsystem/adaptive_scheduler:v1.5.0
         restart: always
         links:
-            -  redis:redis
+            -  redis:rediscache
         environment:
             -  OPENTSDB_HOSTNAME=opentsdb-path
             -  OPENTSDB_PYTHON_METRICS_TEST_MODE=True
@@ -194,7 +194,7 @@ services:
             -  OBSERVATION_PORTAL_API_TOKEN=sutoken1234abcd
             -  CONFIGDB_URL=http://configdb:7000
             -  DOWNTIMEDB_URL=http://downtime:7500/
-            -  REDIS_URL=redis://redis
+            -  REDIS_URL=redis://rediscache/2
             -  TELESCOPE_CLASSES=1m0,2m0
             -  SAVE_PICKLE_INPUT_FILES=False
             -  SAVE_JSON_OUTPUT_FILES=False
@@ -252,6 +252,10 @@ services:
             interval: 30s
             timeout: 20s
             retries: 3
+        networks:
+          default:
+            aliases:
+              -  ocs-example-bucket.localhost
     minio2:
         image: minio/minio:RELEASE.2021-06-17T00-10-46Z
         volumes:
@@ -270,6 +274,10 @@ services:
             interval: 30s
             timeout: 20s
             retries: 3
+        networks:
+          default:
+            aliases:
+              -  ocs-example-bucket.localhost
     minio3:
         image: minio/minio:RELEASE.2021-06-17T00-10-46Z
         volumes:
@@ -288,6 +296,10 @@ services:
             interval: 30s
             timeout: 20s
             retries: 3
+        networks:
+          default:
+            aliases:
+              -  ocs-example-bucket.localhost
     minio4:
         image: minio/minio:RELEASE.2021-06-17T00-10-46Z
         volumes:
@@ -306,6 +318,10 @@ services:
             interval: 30s
             timeout: 20s
             retries: 3
+        networks:
+          default:
+            aliases:
+              -  ocs-example-bucket.localhost
 
     nginx:
         image: nginx:1.19.2-alpine
@@ -321,6 +337,8 @@ services:
     science_archive:
         image: ghcr.io/observatorycontrolsystem/science-archive:2.3.1
         container_name: sciencearchive
+        links:
+            -  redis:rediscache
         ports:
             - "9000:9000"  # minio
             - "9500:9500"  # archive api
@@ -347,6 +365,8 @@ services:
             - CONFIGDB_URL=http://configdb:7000/
             - NAVBAR_TITLE_URL=http://localhost:9500/
             - PROCESSED_EXCHANGE_ENABLED=False
+            - CACHE_BACKEND=django_redis.cache.RedisCache
+            - CACHE_LOC=redis://rediscache:6379/3
             # Additional variables for the ingester:
             - API_ROOT=http://localhost:9500/
             - OBSERVATION_PORTAL_BASE_URL=http://observation-portal:8000/api
@@ -366,8 +386,10 @@ services:
             python manage.py collectstatic --no-input ;
             python manage.py runserver 0.0.0.0:9500 &
             pip install requests ocs_ingester;
+            sleep 2 ;
             python /scripts/initialize_bucket.py ;
             python /scripts/ingest_sample_data.py ;
+            python manage.py cacheaggregates ;
             wait %1"
         depends_on:
         - observation-portal
@@ -410,6 +432,7 @@ services:
          - 9700:8080
         environment:
          - ARCHIVE_API_URL=http://sciencearchive:9500/
+         - STORAGE_URL=http://localhost:9000/
          - AWS_ACCESS_KEY_ID=minio_access_key
          - AWS_SECRET_ACCESS_KEY=minio_secret
          - AWS_DEFAULT_REGION=minio-region
