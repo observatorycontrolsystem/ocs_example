@@ -324,7 +324,8 @@ services:
               -  ocs-example-bucket.localhost
 
     nginx:
-        image: nginx:1.19.2-alpine
+        # image: nginx:1.19.2-alpine
+        image: docker.lco.global/nginx-mod-zip:1.15.12
         volumes:
         - ./nginx.conf:/etc/nginx/nginx.conf:ro
         network_mode: "service:science_archive"
@@ -399,33 +400,23 @@ services:
         - minio4
 
     science_archive_client:
-        image: ghcr.io/observatorycontrolsystem/science-archive-client:1.1.0
-        container_name: sciencearchive-client
+        image: ghcr.io/observatorycontrolsystem/science-archive-client:1.1.1
         ports:
          - "9600:8080"
         restart: always
         environment:
-         - VUE_APP_OBSERVATION_PORTAL_API_URL=http://127.0.0.1:8000
+         - VUE_APP_OBSERVATION_PORTAL_API_URL=http://127.0.0.1:8000/api
          - VUE_APP_ARCHIVE_API_URL=http://127.0.0.1:9500
          - VUE_APP_SIMBAD_SERVICE_URL=http://127.0.0.1:9800
          - VUE_APP_THUMBNAIL_SERVICE_URL=http://127.0.0.1:9700
-         - VUE_APP_NAVBAR_BRAND_URL=https://lco.global
-         - VUE_APP_BRAND_IMAGE_LARGE=https://cdn.lco.global/mainstyle/img/LCO_logo_transparent_with_coords.png
-         - VUE_APP_BRAND_IMAGE_SMALL=https://cdn.lco.global/mainstyle/img/LCO_logo_transparent_with_coords.png
          - VUE_APP_DOCUMENTATION_URL=https://lco.global/documentation/archive-documentation/
-         - VUE_APP_ORGANIZATION_HOMEPAGE_LINK=https://lco.global
-         - VUE_APP_TERMS_OF_SERVICE_URL=https://lco.global/observatory/termsofservice/
-         - VUE_APP_PRIVACY_POLICY_URL=https://lco.global/observatory/privacy-policy/
-         - VUE_APP_FEEDBACK_EMAIL=mailto:science-support@lco.global
          - VUE_APP_GITHUB_API_URL=https://github.com/observatorycontrolsystem/science-archive
-         - VUE_APP_API_DOCUMENTATION_URL=https://developers.lco.global/#archive
-         - VUE_APP_GENERAL_DOCUMENTATION_URL=https://lco.global/documentation/archive-documentation/
          - "VUE_APP_REDUCTION_LEVEL_OPTIONS={\"0\": \"Raw\", \"91\": \"Processed\"}"
         depends_on:
          - science_archive
 
     thumbnail_service:
-        # image: ghcr.io/observatorycontrolsystem/thumbnail-service:3.0.0
+        image: ghcr.io/observatorycontrolsystem/thumbnail-service:3.0.1
         image: thumbservice-test
         container_name: thumbnailservice
         ports:
