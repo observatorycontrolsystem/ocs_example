@@ -324,8 +324,7 @@ services:
               -  ocs-example-bucket.localhost
 
     nginx:
-        # image: nginx:1.19.2-alpine
-        image: docker.lco.global/nginx-mod-zip:1.15.12
+        image: observatorycontrolsystem/nginx-mod-zip:1.15.12
         volumes:
         - ./nginx.conf:/etc/nginx/nginx.conf:ro
         network_mode: "service:science_archive"
