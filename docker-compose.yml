@@ -343,6 +343,8 @@ services:
         ports:
             - "9000:9000"  # minio
             - "9500:9500"  # archive api
+        expose:
+            - "9501"
         environment:
             - DEBUG=True  # must be true to load static files
             - DB_HOST=db
@@ -385,7 +387,7 @@ services:
         command: >
             sh -c "python manage.py migrate ;
             python manage.py collectstatic --no-input ;
-            python manage.py runserver 0.0.0.0:9500 &
+            python manage.py runserver 0.0.0.0:9501 &
             pip install requests ocs_ingester;
             sleep 2 ;
             python /scripts/initialize_bucket.py ;
