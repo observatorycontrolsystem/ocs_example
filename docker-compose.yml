@@ -418,7 +418,6 @@ services:
 
     thumbnail_service:
         image: ghcr.io/observatorycontrolsystem/thumbnail-service:3.0.1
-        image: thumbservice-test
         container_name: thumbnailservice
         ports:
          - 9700:8080
