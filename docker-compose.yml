@@ -99,6 +99,7 @@ services:
             - DRAMATIQ_BROKER_PORT=6379
             - OAUTH_SERVER_KEY=mysecretserverkey12345
             - OAUTH_CLIENT_APPS_BASE_URLS=http://configdb:7000,http://downtime:7500,http://science_archive:9500
+            - OPENSEARCH_URL=https://opensearch.lco.global
         mem_limit: "512m"
         restart: always
         command: >
