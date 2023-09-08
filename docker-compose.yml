@@ -18,7 +18,7 @@ services:
         restart: always
 
     configdb:
-        image: ghcr.io/observatorycontrolsystem/configdb:3.0.1
+        image: ghcr.io/observatorycontrolsystem/configdb:3.0.4
         ports:
             - "7000:7000"
         environment:
@@ -49,7 +49,7 @@ services:
                 condition: service_healthy
 
     downtime:
-        image: ghcr.io/observatorycontrolsystem/downtime:2.4.0
+        image: ghcr.io/observatorycontrolsystem/downtime:2.4.2
         ports:
             - "7500:7500"
         environment:
@@ -79,7 +79,7 @@ services:
                 condition: service_healthy
 
     observation-portal:
-        image: ghcr.io/observatorycontrolsystem/observation-portal:4.4.4
+        image: ghcr.io/observatorycontrolsystem/observation-portal:4.8.0
         ports:
             - "8000:8000"
         environment:
@@ -119,7 +119,7 @@ services:
                 condition: service_healthy
 
     dramatiq_task_scheduler:
-        image: ghcr.io/observatorycontrolsystem/observation-portal:4.4.4
+        image: ghcr.io/observatorycontrolsystem/observation-portal:4.8.0
         environment:
             - DB_HOST=db
             - DB_NAME=observationportal
@@ -151,7 +151,7 @@ services:
                 condition: service_healthy
 
     dramatiq_worker:
-        image: ghcr.io/observatorycontrolsystem/observation-portal:4.4.4
+        image: ghcr.io/observatorycontrolsystem/observation-portal:4.8.0
         environment:
             - DB_HOST=db
             - DB_NAME=observationportal
@@ -183,7 +183,7 @@ services:
                 condition: service_healthy
 
     adaptive_scheduler:
-        image: ghcr.io/observatorycontrolsystem/adaptive_scheduler:v1.5.0
+        image: ghcr.io/observatorycontrolsystem/adaptive_scheduler:v1.5.2
         restart: always
         links:
             -  redis:rediscache
@@ -335,7 +335,7 @@ services:
         - minio4
 
     science_archive:
-        image: ghcr.io/observatorycontrolsystem/science-archive:2.3.1
+        image: ghcr.io/observatorycontrolsystem/science-archive:2.3.6
         container_name: sciencearchive
         links:
             -  redis:rediscache
@@ -417,7 +417,7 @@ services:
          - science_archive
 
     thumbnail_service:
-        image: ghcr.io/observatorycontrolsystem/thumbnail-service:3.0.1
+        image: ghcr.io/observatorycontrolsystem/thumbnail-service:3.0.2
         container_name: thumbnailservice
         ports:
          - 9700:8080
@@ -444,7 +444,7 @@ services:
          - science_archive
 
     simbad2k:
-        image: ghcr.io/observatorycontrolsystem/simbad2k:1.1.0
+        image: ghcr.io/observatorycontrolsystem/simbad2k:1.2.0
         container_name: simbad2k
         ports:
          - 9800:5000
