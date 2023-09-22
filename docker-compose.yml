@@ -3,6 +3,7 @@ version: "3.7"
 services:
     db:
         image: postgis/postgis:13-master
+        platform: linux/x86_64
         environment:
             - POSTGRES_USER=postgres
             - POSTGRES_MULTIPLE_DATABASES=configdb,observationportal,downtime,sciencearchive
@@ -19,6 +20,7 @@ services:
 
     configdb:
         image: ghcr.io/observatorycontrolsystem/configdb:3.0.4
+        platform: linux/x86_64
         ports:
             - "7000:7000"
         environment:
@@ -50,6 +52,7 @@ services:
 
     downtime:
         image: ghcr.io/observatorycontrolsystem/downtime:2.4.2
+        platform: linux/x86_64
         ports:
             - "7500:7500"
         environment:
@@ -80,6 +83,7 @@ services:
 
     observation-portal:
         image: ghcr.io/observatorycontrolsystem/observation-portal:4.8.0
+        platform: linux/x86_64
         ports:
             - "8000:8000"
         environment:
@@ -120,6 +124,7 @@ services:
 
     dramatiq_task_scheduler:
         image: ghcr.io/observatorycontrolsystem/observation-portal:4.8.0
+        platform: linux/x86_64
         environment:
             - DB_HOST=db
             - DB_NAME=observationportal
@@ -152,6 +157,7 @@ services:
 
     dramatiq_worker:
         image: ghcr.io/observatorycontrolsystem/observation-portal:4.8.0
+        platform: linux/x86_64
         environment:
             - DB_HOST=db
             - DB_NAME=observationportal
@@ -184,6 +190,7 @@ services:
 
     adaptive_scheduler:
         image: ghcr.io/observatorycontrolsystem/adaptive_scheduler:v1.5.2
+        platform: linux/x86_64
         restart: always
         links:
             -  redis:rediscache
@@ -221,6 +228,7 @@ services:
 
     ocs_frontend:
         image: ghcr.io/observatorycontrolsystem/ocs-example-frontend:0.1.1
+        platform: linux/x86_64
         ports:
             - "8080:8080"
         restart: always
@@ -325,6 +333,7 @@ services:
 
     nginx:
         image: observatorycontrolsystem/nginx-mod-zip:1.15.12
+        platform: linux/x86_64
         volumes:
         - ./nginx.conf:/etc/nginx/nginx.conf:ro
         network_mode: "service:science_archive"
@@ -336,6 +345,7 @@ services:
 
     science_archive:
         image: ghcr.io/observatorycontrolsystem/science-archive:2.3.6
+        platform: linux/x86_64
         container_name: sciencearchive
         links:
             -  redis:rediscache
@@ -402,6 +412,7 @@ services:
 
     science_archive_client:
         image: ghcr.io/observatorycontrolsystem/science-archive-client:1.1.1
+        platform: linux/x86_64
         ports:
          - "9600:8080"
         restart: always
@@ -418,6 +429,7 @@ services:
 
     thumbnail_service:
         image: ghcr.io/observatorycontrolsystem/thumbnail-service:3.0.2
+        platform: linux/x86_64
         container_name: thumbnailservice
         ports:
          - 9700:8080
@@ -445,6 +457,7 @@ services:
 
     simbad2k:
         image: ghcr.io/observatorycontrolsystem/simbad2k:1.2.0
+        platform: linux/x86_64
         container_name: simbad2k
         ports:
          - 9800:5000
