@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
     db:
-        image: postgis/postgis:13-master
+        image: postgis/postgis:14-master
         environment:
             - POSTGRES_USER=postgres
             - POSTGRES_MULTIPLE_DATABASES=configdb,observationportal,downtime,sciencearchive
@@ -79,7 +79,7 @@ services:
                 condition: service_healthy
 
     observation-portal:
-        image: ghcr.io/observatorycontrolsystem/observation-portal:4.8.0
+        image: ghcr.io/observatorycontrolsystem/observation-portal:4.8.3
         ports:
             - "8000:8000"
         environment:
@@ -119,7 +119,7 @@ services:
                 condition: service_healthy
 
     dramatiq_task_scheduler:
-        image: ghcr.io/observatorycontrolsystem/observation-portal:4.8.0
+        image: ghcr.io/observatorycontrolsystem/observation-portal:4.8.3
         environment:
             - DB_HOST=db
             - DB_NAME=observationportal
@@ -151,7 +151,7 @@ services:
                 condition: service_healthy
 
     dramatiq_worker:
-        image: ghcr.io/observatorycontrolsystem/observation-portal:4.8.0
+        image: ghcr.io/observatorycontrolsystem/observation-portal:4.8.3
         environment:
             - DB_HOST=db
             - DB_NAME=observationportal
@@ -220,7 +220,7 @@ services:
                 condition: service_healthy
 
     ocs_frontend:
-        image: ghcr.io/observatorycontrolsystem/ocs-example-frontend:0.1.1
+        image: ghcr.io/observatorycontrolsystem/ocs-example-frontend:0.1.2
         ports:
             - "8080:8080"
         restart: always
@@ -335,7 +335,7 @@ services:
         - minio4
 
     science_archive:
-        image: ghcr.io/observatorycontrolsystem/science-archive:2.3.6
+        image: ghcr.io/observatorycontrolsystem/science-archive:2.4.0
         container_name: sciencearchive
         links:
             -  redis:rediscache
@@ -359,6 +359,7 @@ services:
             - AWS_BUCKET=ocs-example-bucket
             - BUCKET=ocs-example-bucket
             - S3_ENDPOINT_URL=http://localhost:9000/
+            - S3_ADDRESSING_STYLE=virtual
             - OAUTH_CLIENT_ID=science_archive_application_client_id
             - OAUTH_CLIENT_SECRET=science_archive_application_client_secret
             - OAUTH_TOKEN_URL=http://observation-portal:8000/o/token/
@@ -388,7 +389,7 @@ services:
             python manage.py collectstatic --no-input ;
             python manage.py runserver 0.0.0.0:9501 &
             pip install requests ocs_ingester;
-            sleep 2 ;
+            sleep 15 ;
             python /scripts/initialize_bucket.py ;
             python /scripts/ingest_sample_data.py ;
             python manage.py cacheaggregates ;
