@@ -67,17 +67,17 @@ from within this directory. Once running, you can use the [credentials given abo
 
 By default, the docker-compose file has ports set up such that:
 
-* The **Observation Portal** API is accessible from <http://localhost:8000/api/>, and its admin interface is accessible from <http://localhost:8000/admin/>.
+* The **Observation Portal** API is accessible from <http://127.0.0.1:8000/api/>, and its admin interface is accessible from <http://127.0.0.1:8000/admin/>.
 
-* The observation portal's **Web Interface** is accessible from <http://localhost:8080/>
+* The observation portal's **Web Interface** is accessible from <http://127.0.0.1:8080/>
 
-* The **Configuration Database** is accessible from <http://localhost:7000/> and its admin interface is accessible from <http://localhost:7000/admin/>.
+* The **Configuration Database** is accessible from <http://127.0.0.1:7000/> and its admin interface is accessible from <http://127.0.0.1:7000/admin/>.
 
-* The **Downtime Database** is accessible from <http://localhost:7500/> and its admin interface is accessible from <http://localhost:7500/admin/>.
+* The **Downtime Database** is accessible from <http://127.0.0.1:7500/> and its admin interface is accessible from <http://127.0.0.1:7500/admin/>.
 
-* The **Science Archive** is accessible from <http://localhost:9500/> and its admin interface is accessible from <http://localhost:9500/admin/>.
+* The **Science Archive** is accessible from <http://127.0.0.1:9500/> and its admin interface is accessible from <http://127.0.0.1:9500/admin/>.
 
-* The **minio server** which emulates S3 is accessible from <http://localhost:9000/>. 
+* The **minio server** which emulates S3 is accessible from <http://127.0.0.1:9000/>. 
 
 
 ## Adding data to the Science Archive
