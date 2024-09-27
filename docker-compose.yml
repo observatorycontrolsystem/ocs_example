@@ -36,7 +36,7 @@ services:
         mem_limit: "512m"
         restart: always
         healthcheck:
-            test: ["CMD-SHELL", "wget localhost:7000/genericmodes/ -q -O - > /dev/null 2>&1"]
+            test: ["CMD-SHELL", "wget 127.0.0.1:7000/genericmodes/ -q -O - > /dev/null 2>&1"]
             interval: 10s
             timeout: 5s
             retries: 5
